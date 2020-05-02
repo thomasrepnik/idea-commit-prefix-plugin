@@ -1,10 +1,10 @@
 <idea-plugin>
     <id>commit-prefix-plugin</id>
     <name>Git Auto Prefix</name>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <vendor url="https://github.com/thomasrepnik/idea-commit-prefix-plugin">Thomas Repnik</vendor>
 
-    <change-notes>Initial release of the plugin. Let me know what you think about it.</change-notes>
+    <change-notes>Initial release of the plugin</change-notes>
 
     <description><![CDATA[
         <p>Automatically set the jira issue key (of the current branch name) as prefix for the commit message</p>

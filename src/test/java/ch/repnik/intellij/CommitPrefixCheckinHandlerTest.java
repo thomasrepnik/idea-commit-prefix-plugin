@@ -44,9 +44,9 @@ class CommitPrefixCheckinHandlerTest {
     }
 
     @Test
-    public void updatePrefix_existingMessageWithPrefixInText_notUpdated() {
+    public void updatePrefix_existingMessageWithPrefixInText_updatedCorrectly() {
         String result = CommitPrefixCheckinHandler.updatePrefix("ABC-1234", "   According to issue XYXY-837292: this fix...     ");
-        assertThat(result, is("   According to issue XYXY-837292: this fix...     "));
+        assertThat(result, is("ABC-1234:    According to issue XYXY-837292: this fix...     "));
     }
 
 }
