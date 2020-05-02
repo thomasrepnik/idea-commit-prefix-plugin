@@ -1,0 +1,50 @@
+<idea-plugin>
+    <id>commit-prefix-plugin</id>
+    <name>Git Auto Prefix</name>
+    <version>1.0.0</version>
+    <vendor url="http://www.repnik.ch">https://github.com/thomasrepnik/</vendor>
+
+    <description><![CDATA[
+        <p>Automatically set the jira issue key (of the current branch name) as prefix for the commit message</p>
+
+        <table cellspacing="5">
+            <tr>
+                <th>Branch Name</th>
+                <th>Commit prefix</th>
+            </tr>
+            <tr>
+                <td>master</td>
+                <td><em>no prefix</em></td>
+            </tr>
+            <tr>
+                <td>bugfix/ABC-1234-app-not-working</td>
+                <td>ABC-1234:</td>
+            </tr>
+            <tr>
+                <td>feature/ABC-1234-app-not-working</td>
+                <td>ABC-1234:</td>
+            </tr>
+            <tr>
+                <td>release/ABC-1234-app-not-working</td>
+                <td>ABC-1234:</td>
+            </tr>
+            <tr>
+                <td>someOtherType/ABC-1234-app-not-working</td>
+                <td>ABC-1234:</td>
+            </tr>
+        </table>
+    ]]></description>
+
+    <!-- please see https://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
+         on how to target different products -->
+    <depends>com.intellij.modules.platform</depends>
+    <depends>Git4Idea</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <vcsCheckinHandlerFactory implementation="ch.repnik.intellij.GitBaseCheckinHandlerFactory" />
+    </extensions>
+
+    <actions>
+        <!-- Add your actions here -->
+    </actions>
+</idea-plugin>
