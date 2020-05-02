@@ -4,6 +4,8 @@
     <version>1.0.0</version>
     <vendor url="http://www.repnik.ch">https://github.com/thomasrepnik/</vendor>
 
+    <change-notes>Initial release of the plugin. Let me know what you think about it.</change-notes>
+
     <description><![CDATA[
         <p>Automatically set the jira issue key (of the current branch name) as prefix for the commit message</p>
 
