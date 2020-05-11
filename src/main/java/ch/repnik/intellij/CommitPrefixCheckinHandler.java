@@ -14,6 +14,7 @@ import git4idea.branch.GitBranchUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -21,7 +22,7 @@ public class CommitPrefixCheckinHandler extends CheckinHandler implements Branch
 
     private final Logger log = Logger.getInstance(getClass());
     private CheckinProjectPanel panel;
-    private static final Pattern branchNamePattern = Pattern.compile("(?<=\\/)([A-Z0-9]+-[0-9]+)");
+    private static final Pattern branchNamePattern = Pattern.compile("(?<=\\/)*([A-Z0-9]+-[0-9]+)");
     private static final Pattern prefixPattern = Pattern.compile("[A-Z0-9]+-[0-9]+:");
 
     private String newCommitMessage;
@@ -51,16 +52,26 @@ public class CommitPrefixCheckinHandler extends CheckinHandler implements Branch
 
     private String getNewCommitMessage(){
         String branchName = extractBranchName();
-        log.warn("BranchName: " + branchName);
+        //log.warn("BranchName: " + branchName);
 
-        Matcher matcher = branchNamePattern.matcher(branchName);
-        if (matcher.find()){
-            String newMessage = updatePrefix(matcher.group(1), panel.getCommitMessage());
+        Optional<String> jiraTicketName = getJiraTicketName(branchName);
+
+        if (jiraTicketName.isPresent()){
+            String newMessage = updatePrefix(jiraTicketName.get(), panel.getCommitMessage());
             //Sets the value for the new Panel UI
             return newMessage;
         }
 
         return  panel.getCommitMessage();
+    }
+
+    static Optional<String> getJiraTicketName(String branchName){
+        Matcher matcher = branchNamePattern.matcher(branchName);
+        if (matcher.find()){
+            return Optional.ofNullable(matcher.group(1));
+        }else{
+            return Optional.empty();
+        }
     }
 
 

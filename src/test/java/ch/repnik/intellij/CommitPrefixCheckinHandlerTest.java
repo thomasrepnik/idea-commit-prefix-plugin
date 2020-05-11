@@ -2,6 +2,8 @@ package ch.repnik.intellij;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.Optional;
+
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -47,6 +49,56 @@ class CommitPrefixCheckinHandlerTest {
     public void updatePrefix_existingMessageWithPrefixInText_updatedCorrectly() {
         String result = CommitPrefixCheckinHandler.updatePrefix("ABC-1234", "   According to issue XYXY-837292: this fix...     ");
         assertThat(result, is("ABC-1234:    According to issue XYXY-837292: this fix...     "));
+    }
+
+    @Test
+    public void getJiraTicketName_withoutBranchType_retunsJiraTicket() {
+        Optional<String> result = CommitPrefixCheckinHandler.getJiraTicketName("ABC-1234-app-not-working");
+
+        assertThat(result.isPresent(), is(true));
+        assertThat(result.get(), is("ABC-1234"));
+    }
+
+    @Test
+    public void getJiraTicketName_featureBranchType_retunsJiraTicket() {
+        Optional<String> result = CommitPrefixCheckinHandler.getJiraTicketName("feature/ABC-1234-app-not-working");
+        assertThat(result.isPresent(), is(true));
+        assertThat(result.get(), is("ABC-1234"));
+    }
+
+    @Test
+    public void getJiraTicketName_releaseBranchType_retunsJiraTicket() {
+        Optional<String> result = CommitPrefixCheckinHandler.getJiraTicketName("release/ABC-1234-app-not-working");
+        assertThat(result.isPresent(), is(true));
+        assertThat(result.get(), is("ABC-1234"));
+    }
+
+    @Test
+    public void getJiraTicketName_bugfixBranchType_retunsJiraTicket() {
+        Optional<String> result = CommitPrefixCheckinHandler.getJiraTicketName("bugfix/ABC-1234-app-not-working");
+        assertThat(result.isPresent(), is(true));
+        assertThat(result.get(), is("ABC-1234"));
+    }
+
+    @Test
+    public void getJiraTicketName_someOtherType_retunsJiraTicket() {
+        Optional<String> result = CommitPrefixCheckinHandler.getJiraTicketName("someOtherType/ABC-1234-app-not-working");
+        assertThat(result.isPresent(), is(true));
+        assertThat(result.get(), is("ABC-1234"));
+    }
+
+    @Test
+    public void getJiraTicketName_emptyType_retunsJiraTicket() {
+        Optional<String> result = CommitPrefixCheckinHandler.getJiraTicketName("/ABC-1234-app-not-working");
+        assertThat(result.isPresent(), is(true));
+        assertThat(result.get(), is("ABC-1234"));
+    }
+
+    @Test
+    public void getJiraTicketName_emptySuffix_retunsJiraTicket() {
+        Optional<String> result = CommitPrefixCheckinHandler.getJiraTicketName("feature/ABC-1234");
+        assertThat(result.isPresent(), is(true));
+        assertThat(result.get(), is("ABC-1234"));
     }
 
 }
