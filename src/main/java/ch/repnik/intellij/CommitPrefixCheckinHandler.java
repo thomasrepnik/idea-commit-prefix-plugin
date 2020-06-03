@@ -1,5 +1,6 @@
 package ch.repnik.intellij;
 
+import ch.repnik.intellij.settings.PluginSettings;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vcs.BranchChangeListener;
@@ -23,7 +24,8 @@ public class CommitPrefixCheckinHandler extends CheckinHandler implements Branch
     private final Logger log = Logger.getInstance(getClass());
     private CheckinProjectPanel panel;
     private static final Pattern branchNamePattern = Pattern.compile("(?<=\\/)*([A-Z0-9]+-[0-9]+)");
-    private static final Pattern prefixPattern = Pattern.compile("[A-Z0-9]+-[0-9]+:");
+    private static final Pattern prefixPattern = Pattern.compile("[A-Z0-9]+-[0-9]+");
+
 
     private String newCommitMessage;
 
@@ -57,7 +59,7 @@ public class CommitPrefixCheckinHandler extends CheckinHandler implements Branch
         Optional<String> jiraTicketName = getJiraTicketName(branchName);
 
         if (jiraTicketName.isPresent()){
-            String newMessage = updatePrefix(jiraTicketName.get(), panel.getCommitMessage());
+            String newMessage = updatePrefix(jiraTicketName.get(), panel.getCommitMessage(), getCommitMessageDelimiter());
             //Sets the value for the new Panel UI
             return newMessage;
         }
@@ -75,18 +77,30 @@ public class CommitPrefixCheckinHandler extends CheckinHandler implements Branch
     }
 
 
-    static String updatePrefix(String newPrefix, String currentMessage){
+    static String updatePrefix(String newPrefix, String currentMessage, String commitMessageDelimiter){
         if (currentMessage == null || currentMessage.trim().isEmpty()){
-            return newPrefix + ": ";
+            return newPrefix + commitMessageDelimiter;
         }
 
         //If there is already a commit message with a matching prefix only replace the prefix
         Matcher matcher = prefixPattern.matcher(currentMessage);
-        if (matcher.find() && currentMessage.substring(0, matcher.start()).trim().isEmpty()){
-            return currentMessage.replaceFirst(prefixPattern.pattern(), newPrefix + ":");
+        if (matcher.find() &&
+                currentMessage.substring(0, matcher.start()).trim().isEmpty() &&
+                currentMessage.substring(matcher.end(), matcher.end() + commitMessageDelimiter.length()).equals(commitMessageDelimiter)
+        ){
+            String start = currentMessage.substring(0, matcher.start());
+            String end = currentMessage.substring(matcher.end() + commitMessageDelimiter.length());
+
+            return start + newPrefix + commitMessageDelimiter + end;
         }
 
-        return newPrefix + ": " + currentMessage;
+        return newPrefix + commitMessageDelimiter + currentMessage;
+    }
+
+
+
+    String getCommitMessageDelimiter() {
+        return PluginSettings.getInstance().getCommitMessageDelimiter();
     }
 
     private String extractBranchName() {

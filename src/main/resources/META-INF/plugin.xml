@@ -52,6 +52,7 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <vcsCheckinHandlerFactory implementation="ch.repnik.intellij.GitBaseCheckinHandlerFactory" />
+        <applicationConfigurable instance="ch.repnik.intellij.settings.PluginSettingsConfigurable"></applicationConfigurable>
     </extensions>
 
     <actions>
