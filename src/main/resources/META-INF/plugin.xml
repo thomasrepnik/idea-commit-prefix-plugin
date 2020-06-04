@@ -4,7 +4,7 @@
     <version>1.0.3</version>
     <vendor url="https://github.com/thomasrepnik/idea-commit-prefix-plugin">Thomas Repnik</vendor>
 
-    <change-notes>Added customizable delimiter</change-notes>
+    <change-notes>Added customizable delimiter between issue key and commit message</change-notes>
 
     <description><![CDATA[
         <p>
