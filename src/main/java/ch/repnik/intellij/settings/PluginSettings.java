@@ -15,8 +15,6 @@ public class PluginSettings {
         if (instance == null){
             instance = new PluginSettings();
 
-            //PropertiesComponent.getInstance().unsetValue(SETTING_COMMIT_MESSAGE_TEMPLATE);
-
             //Set unset Properties
             instance.savePropertyIfUnset(SETTING_COMMIT_MESSAGE_DELIMITER, ": ");
 

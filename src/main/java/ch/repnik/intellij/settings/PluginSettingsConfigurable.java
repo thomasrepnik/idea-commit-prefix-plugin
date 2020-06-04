@@ -12,7 +12,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class PluginSettingsConfigurable implements SearchableConfigurable {
-// :_-/|,.
+
     private Pattern allowedCharsPattern = Pattern.compile("[ :\\_\\-/\\|,\\.]+");
     private PluginSettingsForm settingsForm;
 
@@ -61,16 +61,6 @@ public class PluginSettingsConfigurable implements SearchableConfigurable {
         if (!allowedCharsPattern.matcher(settingsForm.getDelimiter()).matches()){
             throw new ConfigurationException("Delimiter can only contain following chars: \" :_-/|,.\"", "Validation failed");
         }
-    }
-
-    int countWords(String baseString, String searchRegex){
-        Pattern pattern = Pattern.compile(searchRegex);
-        Matcher matcher = pattern.matcher(baseString);
-        int count = 0;
-        while (matcher.find()) {
-            count++;
-        }
-        return count;
     }
 
     @Override
