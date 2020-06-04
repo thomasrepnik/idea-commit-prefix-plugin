@@ -76,6 +76,13 @@ public class CommitPrefixCheckinHandler extends CheckinHandler implements Branch
         }
     }
 
+    static String rTrim(String input){
+        int i = input.length()-1;
+        while (i >= 0 && Character.isWhitespace(input.charAt(i))) {
+            i--;
+        }
+        return input.substring(0,i+1);
+    }
 
     static String updatePrefix(String newPrefix, String currentMessage, String commitMessageDelimiter){
         if (currentMessage == null || currentMessage.trim().isEmpty()){
@@ -85,16 +92,37 @@ public class CommitPrefixCheckinHandler extends CheckinHandler implements Branch
         //If there is already a commit message with a matching prefix only replace the prefix
         Matcher matcher = prefixPattern.matcher(currentMessage);
         if (matcher.find() &&
-                currentMessage.substring(0, matcher.start()).trim().isEmpty() &&
-                currentMessage.substring(matcher.end(), matcher.end() + commitMessageDelimiter.length()).equals(commitMessageDelimiter)
+                subString(currentMessage,0, matcher.start()).trim().isEmpty() &&
+                (subString(currentMessage, matcher.end(), matcher.end() + commitMessageDelimiter.length()).equals(commitMessageDelimiter) ||
+                        subString(currentMessage, matcher.end(), matcher.end() + commitMessageDelimiter.length()).equals(rTrim(commitMessageDelimiter)))
         ){
-            String start = currentMessage.substring(0, matcher.start());
-            String end = currentMessage.substring(matcher.end() + commitMessageDelimiter.length());
+            String start = subString(currentMessage, 0, matcher.start());
+            String end = subString(currentMessage, matcher.end() + commitMessageDelimiter.length());
 
             return start + newPrefix + commitMessageDelimiter + end;
         }
 
         return newPrefix + commitMessageDelimiter + currentMessage;
+    }
+
+    static String subString(String string, int start){
+        if (string.length() < start){
+            return "";
+        }else{
+            return string.substring(start);
+        }
+    }
+
+    static String subString(String string, int start, int end){
+        if (end < start){
+            throw new IllegalArgumentException("start must be smaller than end");
+        } else if (string.length() < start || start == end){
+            return "";
+        } else if (string.length() < end){
+            return string.substring(start);
+        } else {
+            return string.substring(start, end);
+        }
     }
 
 

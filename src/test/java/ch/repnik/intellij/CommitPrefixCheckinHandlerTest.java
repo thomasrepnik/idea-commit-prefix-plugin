@@ -16,6 +16,12 @@ class CommitPrefixCheckinHandlerTest {
     }
 
     @Test
+    public void updatePrefix_delimiterWithoutMessage_updatedCorrectly() {
+        String result = CommitPrefixCheckinHandler.updatePrefix("ABC-1234", "XYXY-837292:", ": ");
+        assertThat(result, is("ABC-1234: "));
+    }
+
+    @Test
     public void updatePrefix_wrongDelimiter_issueNotRecognized() {
         String result = CommitPrefixCheckinHandler.updatePrefix("ABC-1234", "XYXY-837292: This is my text", " | ");
         assertThat(result, is("ABC-1234 | XYXY-837292: This is my text"));
