@@ -1,10 +1,10 @@
 <idea-plugin>
     <id>commit-prefix-plugin</id>
     <name>Git Auto Prefix</name>
-    <version>1.0.3</version>
+    <version>1.0.4</version>
     <vendor url="https://github.com/thomasrepnik/idea-commit-prefix-plugin">Thomas Repnik</vendor>
 
-    <change-notes>Added customizable delimiter between issue key and commit message</change-notes>
+    <change-notes>Added support for IntelliJ 2020.2</change-notes>
 
     <description><![CDATA[
         <p>
