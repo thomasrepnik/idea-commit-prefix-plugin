@@ -1,10 +1,10 @@
 plugins {
     id 'java'
-    id 'org.jetbrains.intellij' version '0.4.18'
+    id 'org.jetbrains.intellij' version '0.4.21'
 }
 
 group 'ch.repnik'
-version '1.0.3'
+version '1.0.4'
 
 repositories {
     mavenCentral()
@@ -30,6 +30,6 @@ test {
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
-    version '2020.1'
+    version '2020.2'
     plugins = ['git4idea']
 }
