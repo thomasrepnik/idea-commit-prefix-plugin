@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'ch.repnik'
-version '1.0.5'
+version '1.0.6'
 
 repositories {
     mavenCentral()
@@ -30,12 +30,16 @@ test {
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
-    version '2020.3'
+    version '2021.1'
     plugins = ['git4idea']
 }
 
 runPluginVerifier{
-    ideVersions = ["IC-2020.3"]
+    ideVersions = ["IC-2021.1"]
+}
+
+patchPluginXml {
+    untilBuild null
 }
 
 
