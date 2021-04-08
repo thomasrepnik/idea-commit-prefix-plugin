@@ -1,10 +1,10 @@
 <idea-plugin>
     <id>commit-prefix-plugin</id>
     <name>Git Auto Prefix</name>
-    <version>1.0.5</version>
+    <version>1.0.6</version>
     <vendor url="https://github.com/thomasrepnik/idea-commit-prefix-plugin">Thomas Repnik</vendor>
 
-    <change-notes>Added support for IntelliJ 2020.3</change-notes>
+    <change-notes>Added support for IntelliJ 2021.1</change-notes>
 
     <description><![CDATA[
         <p>
