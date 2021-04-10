@@ -1,17 +1,27 @@
 package ch.repnik.intellij.settings;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
 public class PluginSettingsForm {
     private JPanel mainPanel;
-    private JTextField txtDelimiter;
+    private JTextField txtWrapLeft;
+    private JTextField txtWrapRight;
 
     public PluginSettingsForm(){
-        txtDelimiter.addKeyListener(new KeyAdapter() {
+        txtWrapLeft.addKeyListener(new KeyAdapter() {
             public void keyTyped(KeyEvent e) {
-                if (txtDelimiter.getText().length() >= 5 ) // limit textfield to 5 characters
+                if (txtWrapLeft.getText().length() >= 5 ) // limit textfield to 5 characters
+                    e.consume();
+            }
+        });
+
+        txtWrapRight.addKeyListener(new KeyAdapter() {
+            public void keyTyped(KeyEvent e) {
+                if (txtWrapRight.getText().length() >= 5 ) // limit textfield to 5 characters
                     e.consume();
             }
         });
@@ -21,11 +31,14 @@ public class PluginSettingsForm {
         return mainPanel;
     }
 
-    public String getDelimiter(){
-        return txtDelimiter.getText();
+    public String getWrapRight(){
+        return txtWrapRight.getText();
     }
 
+    public String getWrapLeft() {return txtWrapLeft.getText();}
+
     public void resetEditorFrom(PluginSettings settings){
-        this.txtDelimiter.setText(settings.getCommitMessageDelimiter());
+        this.txtWrapLeft.setText(settings.getWrapLeft());
+        this.txtWrapRight.setText(settings.getWrapRight());
     }
 }

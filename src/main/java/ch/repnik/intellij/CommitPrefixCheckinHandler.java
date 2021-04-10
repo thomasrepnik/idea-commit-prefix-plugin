@@ -59,7 +59,7 @@ public class CommitPrefixCheckinHandler extends CheckinHandler implements Branch
         Optional<String> jiraTicketName = getJiraTicketName(branchName);
 
         if (jiraTicketName.isPresent()){
-            String newMessage = updatePrefix(jiraTicketName.get(), panel.getCommitMessage(), getCommitMessageDelimiter());
+            String newMessage = updatePrefix(jiraTicketName.get(), panel.getCommitMessage(), getWrapLeft(), getWrapRight());
             //Sets the value for the new Panel UI
             return newMessage;
         }
@@ -84,25 +84,25 @@ public class CommitPrefixCheckinHandler extends CheckinHandler implements Branch
         return input.substring(0,i+1);
     }
 
-    static String updatePrefix(String newPrefix, String currentMessage, String commitMessageDelimiter){
+    static String updatePrefix(String newPrefix, String currentMessage, String wrapLeft, String wrapRight){
         if (currentMessage == null || currentMessage.trim().isEmpty()){
-            return newPrefix + commitMessageDelimiter;
+            return wrapLeft + newPrefix + wrapRight;
         }
 
         //If there is already a commit message with a matching prefix only replace the prefix
         Matcher matcher = prefixPattern.matcher(currentMessage);
         if (matcher.find() &&
-                subString(currentMessage,0, matcher.start()).trim().isEmpty() &&
-                (subString(currentMessage, matcher.end(), matcher.end() + commitMessageDelimiter.length()).equals(commitMessageDelimiter) ||
-                        subString(currentMessage, matcher.end(), matcher.end() + commitMessageDelimiter.length()).equals(rTrim(commitMessageDelimiter)))
+                subString(currentMessage,0, matcher.start()).trim().equals(wrapLeft) &&
+                (subString(currentMessage, matcher.end(), matcher.end() + wrapRight.length()).equals(wrapRight) ||
+                        subString(currentMessage, matcher.end(), matcher.end() + wrapRight.length()).equals(rTrim(wrapRight)))
         ){
             String start = subString(currentMessage, 0, matcher.start());
-            String end = subString(currentMessage, matcher.end() + commitMessageDelimiter.length());
+            String end = subString(currentMessage, matcher.end() + wrapRight.length());
 
-            return start + newPrefix + commitMessageDelimiter + end;
+            return start + newPrefix + wrapRight + end;
         }
 
-        return newPrefix + commitMessageDelimiter + currentMessage;
+        return wrapLeft + newPrefix + wrapRight + currentMessage;
     }
 
     static String subString(String string, int start){
@@ -127,8 +127,12 @@ public class CommitPrefixCheckinHandler extends CheckinHandler implements Branch
 
 
 
-    String getCommitMessageDelimiter() {
-        return PluginSettings.getInstance().getCommitMessageDelimiter();
+    String getWrapRight() {
+        return PluginSettings.getInstance().getWrapRight();
+    }
+
+    String getWrapLeft() {
+        return PluginSettings.getInstance().getWrapLeft();
     }
 
     private String extractBranchName() {
