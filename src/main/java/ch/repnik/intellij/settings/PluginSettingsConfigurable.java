@@ -64,7 +64,7 @@ public class PluginSettingsConfigurable implements SearchableConfigurable {
             throw new ConfigurationException("Wrap Right/Delimiter can only contain following chars: \" [](){}:_-/|,.\"", "Validation failed");
         }
 
-        if (!allowedCharsPattern.matcher(settingsForm.getWrapLeft()).matches()){
+        if (!settingsForm.getWrapLeft().isEmpty() && !allowedCharsPattern.matcher(settingsForm.getWrapLeft()).matches()){
             throw new ConfigurationException("Wrap Left can only contain following chars: \" [](){}:_-/|,.\"", "Validation failed");
         }
     }
