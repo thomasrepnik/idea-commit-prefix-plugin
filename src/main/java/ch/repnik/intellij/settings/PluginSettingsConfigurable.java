@@ -8,12 +8,11 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.util.Objects;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class PluginSettingsConfigurable implements SearchableConfigurable {
 
-    private Pattern allowedCharsPattern = Pattern.compile("[ :\\_\\-/\\|,\\.]+");
+    private Pattern allowedCharsPattern = Pattern.compile("[ \\[\\]\\(\\)\\{\\}:\\_\\-/\\|,\\.]+");
     private PluginSettingsForm settingsForm;
 
 
@@ -36,9 +35,11 @@ public class PluginSettingsConfigurable implements SearchableConfigurable {
     @Override
     public boolean isModified() {
         PluginSettings settings = PluginSettings.getInstance();
-        String oldValue = settings.getCommitMessageDelimiter();
-        String newValue = settingsForm.getDelimiter();
-        return !Objects.equals(oldValue, newValue);
+        String oldValueRight = settings.getWrapRight();
+        String newValueRight = settingsForm.getWrapRight();
+        String oldValueLeft = settings.getWrapLeft();
+        String newValueLeft = settingsForm.getWrapRight();
+        return !Objects.equals(oldValueRight, newValueRight) || !Objects.equals(oldValueLeft, newValueLeft);
     }
 
     @Override
@@ -46,7 +47,8 @@ public class PluginSettingsConfigurable implements SearchableConfigurable {
         if (settingsForm != null) {
             if (isModified()) {
                 validate();
-                PluginSettings.getInstance().setCommitMessageDelimiter(settingsForm.getDelimiter());
+                PluginSettings.getInstance().setWrapRight(settingsForm.getWrapRight());
+                PluginSettings.getInstance().setWrapLeft(settingsForm.getWrapLeft());
                 PluginSettings.getInstance().save();
             }
         }
@@ -54,12 +56,16 @@ public class PluginSettingsConfigurable implements SearchableConfigurable {
 
     private void validate() throws ConfigurationException {
 
-        if (settingsForm.getDelimiter().isEmpty()){
-            throw new ConfigurationException("Delimiter must not be empty", "Validation failed");
+        if (settingsForm.getWrapRight().isEmpty()){
+            throw new ConfigurationException("Wrap Right/Delimiter must not be empty", "Validation failed");
         }
 
-        if (!allowedCharsPattern.matcher(settingsForm.getDelimiter()).matches()){
-            throw new ConfigurationException("Delimiter can only contain following chars: \" :_-/|,.\"", "Validation failed");
+        if (!allowedCharsPattern.matcher(settingsForm.getWrapRight()).matches()){
+            throw new ConfigurationException("Wrap Right/Delimiter can only contain following chars: \" [](){}:_-/|,.\"", "Validation failed");
+        }
+
+        if (!settingsForm.getWrapLeft().isEmpty() && !allowedCharsPattern.matcher(settingsForm.getWrapLeft()).matches()){
+            throw new ConfigurationException("Wrap Left can only contain following chars: \" [](){}:_-/|,.\"", "Validation failed");
         }
     }
 

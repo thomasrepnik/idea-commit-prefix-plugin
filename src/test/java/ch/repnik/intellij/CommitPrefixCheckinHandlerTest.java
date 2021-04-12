@@ -11,62 +11,131 @@ class CommitPrefixCheckinHandlerTest {
 
     @Test
     public void updatePrefix_existingMessage_updatedCorrectly() {
-        String result = CommitPrefixCheckinHandler.updatePrefix("ABC-1234", "XYXY-837292: This is my text", ": ");
+        String result = CommitPrefixCheckinHandler.updatePrefix("ABC-1234", "XYXY-837292: This is my text", "",  ": ");
         assertThat(result, is("ABC-1234: This is my text"));
     }
 
     @Test
     public void updatePrefix_delimiterWithoutMessage_updatedCorrectly() {
-        String result = CommitPrefixCheckinHandler.updatePrefix("ABC-1234", "XYXY-837292:", ": ");
+        String result = CommitPrefixCheckinHandler.updatePrefix("ABC-1234", "XYXY-837292:","", ": ");
         assertThat(result, is("ABC-1234: "));
     }
 
     @Test
     public void updatePrefix_wrongDelimiter_issueNotRecognized() {
-        String result = CommitPrefixCheckinHandler.updatePrefix("ABC-1234", "XYXY-837292: This is my text", " | ");
+        String result = CommitPrefixCheckinHandler.updatePrefix("ABC-1234", "XYXY-837292: This is my text","", " | ");
         assertThat(result, is("ABC-1234 | XYXY-837292: This is my text"));
     }
 
     @Test
     public void updatePrefix_specialDelimiter_updatedCorrectly() {
-        String result = CommitPrefixCheckinHandler.updatePrefix("ABC-1234", null, " :_-/|,.");
-        assertThat(result, is("ABC-1234 :_-/|,."));
+        String result = CommitPrefixCheckinHandler.updatePrefix("ABC-1234", null," [](){}:_-/|,.", " [](){}:_-/|,.");
+        assertThat(result, is(" [](){}:_-/|,.ABC-1234 [](){}:_-/|,."));
     }
 
     @Test
     public void updatePrefix_doubledPattern_updatedCorrectly() {
-        String result = CommitPrefixCheckinHandler.updatePrefix("ABC-1234", "XYXY-837292: XYZ-11 This is my text", ": ");
+        String result = CommitPrefixCheckinHandler.updatePrefix("ABC-1234", "XYXY-837292: XYZ-11 This is my text","", ": ");
         assertThat(result, is("ABC-1234: XYZ-11 This is my text"));
     }
 
     @Test
     public void updatePrefix_null_updatedCorrectly() {
-        String result = CommitPrefixCheckinHandler.updatePrefix("ABC-1234", null, ": ");
+        String result = CommitPrefixCheckinHandler.updatePrefix("ABC-1234", null,"", ": ");
         assertThat(result, is("ABC-1234: "));
     }
 
     @Test
     public void updatePrefix_emptyMessage_updatedCorrectly() {
-        String result = CommitPrefixCheckinHandler.updatePrefix("ABC-1234", "", ": ");
+        String result = CommitPrefixCheckinHandler.updatePrefix("ABC-1234", "","", ": ");
         assertThat(result, is("ABC-1234: "));
     }
 
     @Test
     public void updatePrefix_blankMessage_updatedCorrectly() {
-        String result = CommitPrefixCheckinHandler.updatePrefix("ABC-1234", "       ", ": ");
+        String result = CommitPrefixCheckinHandler.updatePrefix("ABC-1234", "       ","", ": ");
         assertThat(result, is("ABC-1234: "));
     }
 
     @Test
     public void updatePrefix_existingMessageWithBlanks_updatedCorrectly() {
-        String result = CommitPrefixCheckinHandler.updatePrefix("ABC-1234", "   XYXY-837292:  This is a Test     ", ": ");
+        String result = CommitPrefixCheckinHandler.updatePrefix("ABC-1234", "   XYXY-837292:  This is a Test     ","", ": ");
         assertThat(result, is("   ABC-1234:  This is a Test     "));
     }
 
     @Test
     public void updatePrefix_existingMessageWithPrefixInText_updatedCorrectly() {
-        String result = CommitPrefixCheckinHandler.updatePrefix("ABC-1234", "   According to issue XYXY-837292: this fix...     ", ": ");
+        String result = CommitPrefixCheckinHandler.updatePrefix("ABC-1234", "   According to issue XYXY-837292: this fix...     ","", ": ");
         assertThat(result, is("ABC-1234:    According to issue XYXY-837292: this fix...     "));
+    }
+
+
+
+    //TESTS WITH WRAP LEFT
+    @Test
+    public void updatePrefix_existingMessageWrapLeft_updatedCorrectly() {
+        String result = CommitPrefixCheckinHandler.updatePrefix("ABC-1234", "[XYXY-837292]: This is my text", "[",  "]: ");
+        assertThat(result, is("[ABC-1234]: This is my text"));
+    }
+
+    @Test
+    public void updatePrefix_delimiterWithoutMessageWrapLeft_updatedCorrectly() {
+        String result = CommitPrefixCheckinHandler.updatePrefix("ABC-1234", "[XYXY-837292]:","[", "]: ");
+        assertThat(result, is("[ABC-1234]: "));
+    }
+
+    @Test
+    public void updatePrefix_wrongDelimiterWrapLeft_issueNotRecognized() {
+        String result = CommitPrefixCheckinHandler.updatePrefix("ABC-1234", "[XYXY-837292]: This is my text","[", " | ");
+        assertThat(result, is("[ABC-1234 | [XYXY-837292]: This is my text"));
+    }
+
+    @Test
+    public void updatePrefix_specialDelimiterWrapLeft_updatedCorrectly() {
+        String result = CommitPrefixCheckinHandler.updatePrefix("ABC-1234", null," [](){}:_-/|,.", " [](){}:_-/|,.");
+        assertThat(result, is(" [](){}:_-/|,.ABC-1234 [](){}:_-/|,."));
+    }
+
+    @Test
+    public void updatePrefix_doubledPatternWrapLeft_updatedCorrectly() {
+        String result = CommitPrefixCheckinHandler.updatePrefix("ABC-1234", "[XYXY-837292]: XYZ-11 This is my text","[", "]: ");
+        assertThat(result, is("[ABC-1234]: XYZ-11 This is my text"));
+    }
+
+    @Test
+    public void updatePrefix_nullWrapLeft_updatedCorrectly() {
+        String result = CommitPrefixCheckinHandler.updatePrefix("ABC-1234", null,"[", "]: ");
+        assertThat(result, is("[ABC-1234]: "));
+    }
+
+    @Test
+    public void updatePrefix_emptyMessageWrapLeft_updatedCorrectly() {
+        String result = CommitPrefixCheckinHandler.updatePrefix("ABC-1234", "","[", "]: ");
+        assertThat(result, is("[ABC-1234]: "));
+    }
+
+    @Test
+    public void updatePrefix_blankMessageWrapLeft_updatedCorrectly() {
+        String result = CommitPrefixCheckinHandler.updatePrefix("ABC-1234", "       ","[", "]: ");
+        assertThat(result, is("[ABC-1234]: "));
+    }
+
+    @Test
+    public void updatePrefix_existingMessageWithBlanksWrapLeft_updatedCorrectly() {
+        String result = CommitPrefixCheckinHandler.updatePrefix("ABC-1234", "   [XYXY-837292]:  This is a Test     ","[", "]: ");
+        assertThat(result, is("   [ABC-1234]:  This is a Test     "));
+    }
+
+    @Test
+    public void updatePrefix_existingMessageWithPrefixInTextWrapLeft_updatedCorrectly() {
+        String result = CommitPrefixCheckinHandler.updatePrefix("ABC-1234", "   According to issue XYXY-837292: this fix...     ","[", "]: ");
+        assertThat(result, is("[ABC-1234]:    According to issue XYXY-837292: this fix...     "));
+    }
+
+    @Test
+    public void updatePrefix_noMessageButWrappedInBlanks_updatedCorrectly() {
+        String result = CommitPrefixCheckinHandler.updatePrefix("ABC-1234", null,"     ", "     ");
+        assertThat(result, is("     ABC-1234     "));
     }
 
     @Test
