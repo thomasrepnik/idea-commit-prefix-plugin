@@ -12,6 +12,7 @@ import com.intellij.openapi.vcs.ui.RefreshableOnComponent;
 import com.intellij.util.messages.MessageBusConnection;
 import git4idea.GitLocalBranch;
 import git4idea.branch.GitBranchUtil;
+import git4idea.repo.GitRepository;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -141,11 +142,14 @@ public class CommitPrefixCheckinHandler extends CheckinHandler implements Branch
         String branch = "";
         ProjectLevelVcsManager instance = ProjectLevelVcsManagerImpl.getInstance(project);
         if (instance.checkVcsIsActive("Git")) {
-            GitLocalBranch currentBranch = GitBranchUtil.getCurrentRepository(project).getCurrentBranch();
+            GitRepository currentRepository = GitBranchUtil.getCurrentRepository(project);
+            if (currentRepository != null) {
+                GitLocalBranch currentBranch = currentRepository.getCurrentBranch();
 
-            if (currentBranch != null) {
-                // Branch name  matches Ticket Name
-                branch = currentBranch.getName().trim();
+                if (currentBranch != null) {
+                    // Branch name  matches Ticket Name
+                    branch = currentBranch.getName().trim();
+                }
             }
         }
 
