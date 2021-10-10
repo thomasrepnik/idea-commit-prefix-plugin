@@ -1,10 +1,10 @@
 <idea-plugin>
     <id>commit-prefix-plugin</id>
     <name>Git Auto Prefix</name>
-    <version>1.1.1</version>
+    <version>1.1.2</version>
     <vendor url="https://github.com/thomasrepnik/idea-commit-prefix-plugin">Thomas Repnik</vendor>
 
-    <change-notes>Fixed NullPointerException for incomplete git projects</change-notes>
+    <change-notes>Fixes an occasional exception on branch switch</change-notes>
 
     <description><![CDATA[
         <p>
