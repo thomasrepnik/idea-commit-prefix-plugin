@@ -9,6 +9,8 @@ import com.intellij.openapi.vcs.ProjectLevelVcsManager;
 import com.intellij.openapi.vcs.checkin.CheckinHandler;
 import com.intellij.openapi.vcs.impl.ProjectLevelVcsManagerImpl;
 import com.intellij.openapi.vcs.ui.RefreshableOnComponent;
+import com.intellij.psi.PsiDocumentManager;
+import com.intellij.psi.impl.PsiDocumentManagerImpl;
 import com.intellij.util.messages.MessageBusConnection;
 import git4idea.GitLocalBranch;
 import git4idea.branch.GitBranchUtil;
@@ -42,7 +44,16 @@ public class CommitPrefixCheckinHandler extends CheckinHandler implements Branch
     }
 
     private void updateCommitMessage(){
-        panel.setCommitMessage(getNewCommitMessage());
+        PsiDocumentManager psiInstance = PsiDocumentManager.getInstance(this.panel.getProject());
+        if (psiInstance instanceof PsiDocumentManagerImpl){
+            if (!((PsiDocumentManagerImpl) psiInstance).isCommitInProgress()){
+                panel.setCommitMessage(getNewCommitMessage());
+            }else{
+                log.info("PsiDocumentManager reported commit in progress. Skipping Git Auto Prefix");
+            }
+        }else{
+            log.info("PsiDocumentManager is not an instance of PsiDocumentManagerImpl. Skipping Git Auto Prefix");
+        }
     }
 
     @Nullable
