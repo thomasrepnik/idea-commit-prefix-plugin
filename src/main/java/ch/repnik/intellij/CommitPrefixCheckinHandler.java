@@ -16,15 +16,17 @@ import com.intellij.util.messages.MessageBusConnection;
 import git4idea.GitLocalBranch;
 import git4idea.branch.GitBranchUtil;
 import git4idea.repo.GitRepository;
+import git4idea.repo.GitRepositoryChangeListener;
 import git4idea.status.GitRefreshListener;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.swing.*;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class CommitPrefixCheckinHandler extends CheckinHandler implements BranchChangeListener, GitRefreshListener {
+public class CommitPrefixCheckinHandler extends CheckinHandler implements GitRepositoryChangeListener {
 
     private final Logger log = Logger.getInstance(getClass());
     private final CheckinProjectPanel panel;
@@ -35,8 +37,7 @@ public class CommitPrefixCheckinHandler extends CheckinHandler implements Branch
         this.panel = panel;
 
         MessageBusConnection connect = panel.getProject().getMessageBus().connect();
-        connect.subscribe(BranchChangeListener.VCS_BRANCH_CHANGED, this);
-        connect.subscribe(GitRefreshListener.TOPIC, this);
+        connect.subscribe(GitRepository.GIT_REPO_CHANGE, this);
 
         //Sets the new message on the new commit UI
         updateCommitMessage();
@@ -167,20 +168,8 @@ public class CommitPrefixCheckinHandler extends CheckinHandler implements Branch
         return branch;
     }
 
-
     @Override
-    public void branchWillChange(@NotNull String branchName) {
-        updateCommitMessage();
-    }
-
-    @Override
-    public void branchHasChanged(@NotNull String branchName) {
-        updateCommitMessage();
-    }
-
-    //Detects repository updates made in the terminal
-    @Override
-    public void repositoryUpdated(@NotNull GitRepository repository) {
+    public void repositoryChanged(@NotNull GitRepository repository) {
         updateCommitMessage();
     }
 }
