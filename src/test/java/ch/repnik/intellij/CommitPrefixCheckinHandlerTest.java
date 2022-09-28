@@ -147,6 +147,14 @@ class CommitPrefixCheckinHandlerTest {
     }
 
     @Test
+    public void getJiraTicketName_reproduce() {
+        Optional<String> result = CommitPrefixCheckinHandler.getJiraTicketName("feature/DATA-4214-ab-CEP3.0-Transition-polling");
+
+        assertThat(result.isPresent(), is(true));
+        assertThat(result.get(), is("DATA-4214"));
+    }
+
+    @Test
     public void getJiraTicketName_featureBranchType_retunsJiraTicket() {
         Optional<String> result = CommitPrefixCheckinHandler.getJiraTicketName("feature/ABC-1234-app-not-working");
         assertThat(result.isPresent(), is(true));
