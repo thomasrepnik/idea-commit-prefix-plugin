@@ -1,13 +1,14 @@
 <idea-plugin>
     <id>commit-prefix-plugin</id>
     <name>Git Auto Prefix</name>
-    <version>1.2.0</version>
+    <version>1.2.1</version>
     <vendor url="https://github.com/thomasrepnik/idea-commit-prefix-plugin">Thomas Repnik</vendor>
 
     <change-notes><![CDATA[
         <p>
           <ul>
             <li>The Plugin now recognizes branch switches made on the CLI/Terminal</li>
+            <li>The Plugin now recognizes branch renaming</li>
             <li>Update to Java 17</li>
           </ul>
         </p>
