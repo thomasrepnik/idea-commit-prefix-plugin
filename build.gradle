@@ -1,10 +1,10 @@
 plugins {
     id 'java'
-    id 'org.jetbrains.intellij' version '0.6.5'
+    id 'org.jetbrains.intellij' version '1.9.0'
 }
 
 group 'ch.repnik'
-version '1.1.2'
+version '1.2.0'
 
 repositories {
     mavenCentral()
@@ -12,13 +12,14 @@ repositories {
 
 dependencies {
     testImplementation 'org.hamcrest:hamcrest:2.2'
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.2'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.6.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.0'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.9.0'
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
 
 test {
@@ -30,16 +31,17 @@ test {
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
-    version '2021.2'
+    version.set('2022.2.2')
     plugins = ['git4idea']
 }
 
 runPluginVerifier{
-    ideVersions = ["IC-2021.2"]
+    ideVersions = ["IC-2022.2.2"]
 }
 
 patchPluginXml {
-    untilBuild null
+    sinceBuild.set("222")
+    untilBuild.set(null)
 }
 
 

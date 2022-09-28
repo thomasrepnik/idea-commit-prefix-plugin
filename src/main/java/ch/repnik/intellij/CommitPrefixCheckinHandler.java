@@ -1,6 +1,7 @@
 package ch.repnik.intellij;
 
 import ch.repnik.intellij.settings.PluginSettings;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vcs.BranchChangeListener;
@@ -15,6 +16,7 @@ import com.intellij.util.messages.MessageBusConnection;
 import git4idea.GitLocalBranch;
 import git4idea.branch.GitBranchUtil;
 import git4idea.repo.GitRepository;
+import git4idea.status.GitRefreshListener;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -22,38 +24,37 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class CommitPrefixCheckinHandler extends CheckinHandler implements BranchChangeListener {
+public class CommitPrefixCheckinHandler extends CheckinHandler implements BranchChangeListener, GitRefreshListener {
 
     private final Logger log = Logger.getInstance(getClass());
-    private CheckinProjectPanel panel;
+    private final CheckinProjectPanel panel;
     private static final Pattern branchNamePattern = Pattern.compile("(?<=\\/)*([A-Z0-9]+-[0-9]+)");
     private static final Pattern prefixPattern = Pattern.compile("[A-Z0-9]+-[0-9]+");
-
-
-    private String newCommitMessage;
-
 
     public CommitPrefixCheckinHandler(CheckinProjectPanel panel) {
         this.panel = panel;
 
         MessageBusConnection connect = panel.getProject().getMessageBus().connect();
         connect.subscribe(BranchChangeListener.VCS_BRANCH_CHANGED, this);
+        connect.subscribe(GitRefreshListener.TOPIC, this);
 
         //Sets the new message on the new commit UI
         updateCommitMessage();
     }
 
     private void updateCommitMessage(){
-        PsiDocumentManager psiInstance = PsiDocumentManager.getInstance(this.panel.getProject());
-        if (psiInstance instanceof PsiDocumentManagerImpl){
-            if (!((PsiDocumentManagerImpl) psiInstance).isCommitInProgress()){
-                panel.setCommitMessage(getNewCommitMessage());
+        ApplicationManager.getApplication().invokeLater(() -> {
+            PsiDocumentManager psiInstance = PsiDocumentManager.getInstance(this.panel.getProject());
+            if (psiInstance instanceof PsiDocumentManagerImpl){
+                if (!((PsiDocumentManagerImpl) psiInstance).isCommitInProgress()){
+                    panel.setCommitMessage(getNewCommitMessage());
+                }else{
+                    log.info("PsiDocumentManager reported commit in progress. Skipping Git Auto Prefix");
+                }
             }else{
-                log.info("PsiDocumentManager reported commit in progress. Skipping Git Auto Prefix");
+                log.info("PsiDocumentManager is not an instance of PsiDocumentManagerImpl. Skipping Git Auto Prefix");
             }
-        }else{
-            log.info("PsiDocumentManager is not an instance of PsiDocumentManagerImpl. Skipping Git Auto Prefix");
-        }
+        });
     }
 
     @Nullable
@@ -71,9 +72,8 @@ public class CommitPrefixCheckinHandler extends CheckinHandler implements Branch
         Optional<String> jiraTicketName = getJiraTicketName(branchName);
 
         if (jiraTicketName.isPresent()){
-            String newMessage = updatePrefix(jiraTicketName.get(), panel.getCommitMessage(), getWrapLeft(), getWrapRight());
             //Sets the value for the new Panel UI
-            return newMessage;
+            return updatePrefix(jiraTicketName.get(), panel.getCommitMessage(), getWrapLeft(), getWrapRight());
         }
 
         return  panel.getCommitMessage();
@@ -175,6 +175,12 @@ public class CommitPrefixCheckinHandler extends CheckinHandler implements Branch
 
     @Override
     public void branchHasChanged(@NotNull String branchName) {
+        updateCommitMessage();
+    }
+
+    //Detects repository updates made in the terminal
+    @Override
+    public void repositoryUpdated(@NotNull GitRepository repository) {
         updateCommitMessage();
     }
 }
