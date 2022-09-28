@@ -41,7 +41,7 @@ runPluginVerifier{
 
 patchPluginXml {
     sinceBuild.set("222")
-    untilBuild.set(null)
+    untilBuild.set("")
 }
 
 
