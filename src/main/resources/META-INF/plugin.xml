@@ -1,10 +1,17 @@
 <idea-plugin>
     <id>commit-prefix-plugin</id>
     <name>Git Auto Prefix</name>
-    <version>1.1.2</version>
+    <version>1.2.0</version>
     <vendor url="https://github.com/thomasrepnik/idea-commit-prefix-plugin">Thomas Repnik</vendor>
 
-    <change-notes>Fixes an occasional exception on branch switch</change-notes>
+    <change-notes><![CDATA[
+        <p>
+          <ul>
+            <li>The Plugin now recognizes branch switches made on the CLI/Terminal</li>
+            <li>Update to Java 17</li>
+          </ul>
+        </p>
+    ]]></change-notes>
 
     <description><![CDATA[
         <p>
@@ -13,6 +20,8 @@
             <li>Choose your own delimiter between the issue key and commit message</li>
             <li>Wrap the issue key if necessary</li>
           </ul>
+          <br/>
+          <strong>Important:</strong>This plugin only works on branches created by Jira (or manually, with exactly the same naming as jira would use)
         </p>
 
         <table cellspacing="5">
@@ -20,6 +29,11 @@
                 <th>Branch Name</th>
                 <th>Commit prefix (with delimiter)</th>
                 <th>Commit prefix (wrapped)</th>
+            </tr>
+            <tr>
+                <td>main</td>
+                <td><em>no action</em></td>
+                <td><em>no action</em></td>
             </tr>
             <tr>
                 <td>master</td>
