@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'org.jetbrains.intellij' version '1.9.0'
+    id 'org.jetbrains.intellij' version '1.11.0'
 }
 
 group 'ch.repnik'
@@ -31,16 +31,16 @@ test {
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
-    version.set('2022.2.2')
-    plugins = ['git4idea']
+    version.set('2023.1.1')
+    plugins = ['Git4Idea']
 }
 
 runPluginVerifier{
-    ideVersions = ["IC-2022.2.2"]
+    ideVersions = ["IC-2023.1.1"]
 }
 
 patchPluginXml {
-    sinceBuild.set("222")
+    sinceBuild.set("231")
     untilBuild.set("")
 }
 
