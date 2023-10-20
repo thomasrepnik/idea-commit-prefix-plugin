@@ -1,6 +1,7 @@
 package ch.repnik.intellij;
 
 import ch.repnik.intellij.settings.PluginConfigService;
+import ch.repnik.intellij.settings.Position;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
@@ -71,7 +72,7 @@ public class CommitPrefixCheckinHandler extends CheckinHandler implements GitRep
 
         if (jiraTicketName.isPresent()){
             //Sets the value for the new Panel UI
-            return updatePrefix(jiraTicketName.get(), panel.getCommitMessage(), getWrapLeft(), getWrapRight());
+            return updatePrefix(jiraTicketName.get(), panel.getCommitMessage(), getWrapLeft(), getWrapRight(), getIssueKeyPosition());
         }
 
         return  panel.getCommitMessage();
@@ -94,14 +95,28 @@ public class CommitPrefixCheckinHandler extends CheckinHandler implements GitRep
         return input.substring(0,i+1);
     }
 
-    static String updatePrefix(String newPrefix, String currentMessage, String wrapLeft, String wrapRight){
+    static String lTrim(String input){
+        int i = 0;
+        while (i <= input.length()-1 && Character.isWhitespace(input.charAt(i))) {
+            i++;
+        }
+        return input.substring(i,input.length());
+    }
+
+    static String updatePrefix(String newPrefix, String currentMessage, String wrapLeft, String wrapRight, Position issueKeyPosition){
         if (currentMessage == null || currentMessage.trim().isEmpty()){
             return wrapLeft + newPrefix + wrapRight;
         }
 
         //If there is already a commit message with a matching prefix only replace the prefix
         Matcher matcher = prefixPattern.matcher(currentMessage);
-        if (matcher.find() &&
+        Matcher foundLastMatch = null;
+
+        if (issueKeyPosition == Position.END){
+            foundLastMatch = selectLastMatch(matcher, prefixPattern, currentMessage);
+        }
+
+        if (issueKeyPosition == Position.START && matcher.find() &&
                 subString(currentMessage,0, matcher.start()).trim().equals(wrapLeft) &&
                 (subString(currentMessage, matcher.end(), matcher.end() + wrapRight.length()).equals(wrapRight) ||
                         subString(currentMessage, matcher.end(), matcher.end() + wrapRight.length()).equals(rTrim(wrapRight)))
@@ -110,9 +125,42 @@ public class CommitPrefixCheckinHandler extends CheckinHandler implements GitRep
             String end = subString(currentMessage, matcher.end() + wrapRight.length());
 
             return start + newPrefix + wrapRight + end;
+        }else if (issueKeyPosition == Position.END && foundLastMatch.find() &&
+                subString(currentMessage,foundLastMatch.end(), currentMessage.length()).trim().equals(wrapRight) &&
+                (subString(currentMessage, foundLastMatch.start()-wrapLeft.length(), foundLastMatch.start()).equals(wrapLeft) ||
+                        subString(currentMessage, foundLastMatch.start()-wrapLeft.length(), foundLastMatch.start()).equals(lTrim(wrapLeft)))){
+
+            String start = subString(currentMessage, 0, foundLastMatch.start());
+            String end = subString(currentMessage, foundLastMatch.end() + wrapRight.length());
+
+            return start + newPrefix + wrapRight + end;
+
         }
 
-        return wrapLeft + newPrefix + wrapRight + currentMessage;
+        if (issueKeyPosition == Position.START){
+            return wrapLeft + newPrefix + wrapRight + currentMessage;
+        }
+        else{
+            return currentMessage + wrapLeft + newPrefix + wrapRight;
+        }
+    }
+
+    private static Matcher selectLastMatch(Matcher matcher, Pattern pattern, String input) {
+        int foundMatches = 0;
+        while (matcher.find()) {
+            foundMatches++;
+        }
+
+        Matcher newMatcher = pattern.matcher(input);
+        if (foundMatches > 1){
+            for (int i = 1; i<foundMatches; i++){
+                newMatcher.find();
+            }
+
+            return newMatcher;
+        }
+
+        return pattern.matcher(input);
     }
 
     static String subString(String string, int start){
@@ -135,7 +183,9 @@ public class CommitPrefixCheckinHandler extends CheckinHandler implements GitRep
         }
     }
 
-
+    Position getIssueKeyPosition() {
+        return this.panel.getProject().getService(PluginConfigService.class).getState().getIssueKeyPosition();
+    }
 
     String getWrapRight() {
         return this.panel.getProject().getService(PluginConfigService.class).getState().getWrapRight();

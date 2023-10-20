@@ -38,6 +38,8 @@ public class PluginConfigService implements PersistentStateComponent<PluginConfi
         private String wrapLeft = "";
         private String wrapRight = ": ";
 
+        private Position issueKeyPosition = Position.START;
+
         public String getWrapLeft() {
             return wrapLeft;
         }
@@ -52,6 +54,14 @@ public class PluginConfigService implements PersistentStateComponent<PluginConfi
 
         public void setWrapRight(String wrapRight) {
             this.wrapRight = wrapRight;
+        }
+
+        public Position getIssueKeyPosition() {
+            return issueKeyPosition;
+        }
+
+        public void setIssueKeyPosition(Position issueKeyPosition) {
+            this.issueKeyPosition = issueKeyPosition;
         }
     }
 

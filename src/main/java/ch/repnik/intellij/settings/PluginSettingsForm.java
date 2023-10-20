@@ -19,6 +19,8 @@ public class PluginSettingsForm extends BaseConfigurable implements SearchableCo
     private JPanel mainPanel;
     private JTextField txtWrapLeft;
     private JTextField txtWrapRight;
+    private JComboBox cboPosition;
+    private JRadioButton radioButton1;
 
     private Project project;
 
@@ -53,9 +55,14 @@ public class PluginSettingsForm extends BaseConfigurable implements SearchableCo
 
     public String getWrapLeft() {return txtWrapLeft.getText();}
 
+    public Position getIssueKeyPosition() {
+        return Position.parse(cboPosition.getSelectedItem().toString());
+    }
+
     public void resetEditorFrom(PluginConfigService settings){
         this.txtWrapLeft.setText(settings.getState().getWrapLeft());
         this.txtWrapRight.setText(settings.getState().getWrapRight());
+        this.cboPosition.setSelectedItem(settings.getState().getIssueKeyPosition().getStringValue());
     }
 
     @Override
@@ -80,7 +87,9 @@ public class PluginSettingsForm extends BaseConfigurable implements SearchableCo
         String newValueRight = getWrapRight();
         String oldValueLeft = state.getWrapLeft();
         String newValueLeft = getWrapRight();
-        return !Objects.equals(oldValueRight, newValueRight) || !Objects.equals(oldValueLeft, newValueLeft);
+        Position oldIssueKeyPosition = state.getIssueKeyPosition();
+        Position newIssueKeyPosition = getIssueKeyPosition();
+        return !Objects.equals(oldValueRight, newValueRight) || !Objects.equals(oldValueLeft, newValueLeft) || oldIssueKeyPosition != newIssueKeyPosition;
     }
 
     @Override
@@ -92,6 +101,7 @@ public class PluginSettingsForm extends BaseConfigurable implements SearchableCo
                 PluginConfigService.Configuration state = project.getService(PluginConfigService.class).getState();
                 state.setWrapRight(getWrapRight());
                 state.setWrapLeft(getWrapLeft());
+                state.setIssueKeyPosition(getIssueKeyPosition());
             }
         }
     }
@@ -114,9 +124,11 @@ public class PluginSettingsForm extends BaseConfigurable implements SearchableCo
     @Override
     public void reset() {
         if (mainPanel != null) {
-            System.out.println("Form resetted");
             resetEditorFrom(project.getService(PluginConfigService.class));
-            System.out.println(project.getProjectFilePath());
         }
+    }
+
+    private void createUIComponents() {
+        // TODO: place custom component creation code here
     }
 }
