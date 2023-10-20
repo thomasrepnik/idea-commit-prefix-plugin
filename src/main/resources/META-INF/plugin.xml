@@ -81,7 +81,8 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <vcsCheckinHandlerFactory implementation="ch.repnik.intellij.GitBaseCheckinHandlerFactory" />
-        <applicationConfigurable groupId="tools" instance="ch.repnik.intellij.settings.PluginSettingsConfigurable"/>
+        <projectConfigurable groupId="tools" instance="ch.repnik.intellij.settings.PluginSettingsForm"/>
+        <projectService serviceImplementation="ch.repnik.intellij.settings.PluginConfigService"/>
     </extensions>
 
     <actions>

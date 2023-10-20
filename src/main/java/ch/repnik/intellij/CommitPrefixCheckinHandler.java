@@ -1,6 +1,6 @@
 package ch.repnik.intellij;
 
-import ch.repnik.intellij.settings.PluginSettings;
+import ch.repnik.intellij.settings.PluginConfigService;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
@@ -138,11 +138,11 @@ public class CommitPrefixCheckinHandler extends CheckinHandler implements GitRep
 
 
     String getWrapRight() {
-        return PluginSettings.getInstance().getWrapRight();
+        return this.panel.getProject().getService(PluginConfigService.class).getState().getWrapRight();
     }
 
     String getWrapLeft() {
-        return PluginSettings.getInstance().getWrapLeft();
+        return this.panel.getProject().getService(PluginConfigService.class).getState().getWrapLeft();
     }
 
     private String extractBranchName() {
