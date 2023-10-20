@@ -2,6 +2,7 @@ package ch.repnik.intellij;
 
 import ch.repnik.intellij.settings.PluginConfigService;
 import ch.repnik.intellij.settings.Position;
+import com.intellij.dvcs.DvcsUtil;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
@@ -201,7 +202,7 @@ public class CommitPrefixCheckinHandler extends CheckinHandler implements GitRep
         String branch = "";
         ProjectLevelVcsManager instance = ProjectLevelVcsManagerImpl.getInstance(project);
         if (instance.checkVcsIsActive("Git")) {
-            GitRepository currentRepository = GitBranchUtil.getCurrentRepository(project);
+            GitRepository currentRepository = GitBranchUtil.guessWidgetRepository(project, DvcsUtil.getSelectedFile(project));
             if (currentRepository != null) {
                 GitLocalBranch currentBranch = currentRepository.getCurrentBranch();
 
