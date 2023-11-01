@@ -20,7 +20,6 @@ public class PluginSettingsForm extends BaseConfigurable implements SearchableCo
     private JTextField txtWrapLeft;
     private JTextField txtWrapRight;
     private JComboBox cboPosition;
-    private JRadioButton radioButton1;
 
     private Project project;
 
