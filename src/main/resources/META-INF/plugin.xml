@@ -1,15 +1,14 @@
 <idea-plugin>
     <id>commit-prefix-plugin</id>
     <name>Git Auto Prefix</name>
-    <version>1.2.1</version>
+    <version>1.3.0</version>
     <vendor url="https://github.com/thomasrepnik/idea-commit-prefix-plugin">Thomas Repnik</vendor>
 
     <change-notes><![CDATA[
         <p>
           <ul>
-            <li>The Plugin now recognizes branch switches made on the CLI/Terminal</li>
-            <li>The Plugin now recognizes branch renaming</li>
-            <li>Update to Java 17</li>
+            <li>The plugin saves the current configuration in the .idea folder</li>
+            <li>The issue position in the commit message can be changed to start/end</li>
           </ul>
         </p>
     ]]></change-notes>
@@ -81,7 +80,8 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <vcsCheckinHandlerFactory implementation="ch.repnik.intellij.GitBaseCheckinHandlerFactory" />
-        <applicationConfigurable groupId="tools" instance="ch.repnik.intellij.settings.PluginSettingsConfigurable"/>
+        <projectConfigurable groupId="tools" instance="ch.repnik.intellij.settings.PluginSettingsForm"/>
+        <projectService serviceImplementation="ch.repnik.intellij.settings.PluginConfigService"/>
     </extensions>
 
     <actions>
