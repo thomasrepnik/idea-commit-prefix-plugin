@@ -35,10 +35,18 @@ public class PluginConfigService implements PersistentStateComponent<PluginConfi
 
     public static class Configuration implements Serializable {
 
+        private TicketSystem ticketSystem = TicketSystem.JIRA;
         private String wrapLeft = "";
         private String wrapRight = ": ";
-
         private Position issueKeyPosition = Position.START;
+
+        public TicketSystem getTicketSystem() {
+            return ticketSystem;
+        }
+
+        public void setTicketSystem(TicketSystem ticketSystem) {
+            this.ticketSystem = ticketSystem;
+        }
 
         public String getWrapLeft() {
             return wrapLeft;

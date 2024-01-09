@@ -1,10 +1,13 @@
 package ch.repnik.intellij;
 
 import ch.repnik.intellij.settings.Position;
+import ch.repnik.intellij.settings.TicketSystem;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
 
+import static ch.repnik.intellij.settings.TicketSystem.JIRA;
+import static ch.repnik.intellij.settings.TicketSystem.OTHER;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -17,6 +20,11 @@ class CommitPrefixCheckinHandlerTest {
         .withPluginSettings(": ", "", Position.END)
         .updatePrefix()
         .shouldHaveNewMessage("Testli: ABC-1234");
+    update5678AzureBoardsPrefixTester()
+        .withCurrentMessage("Testli")
+        .withPluginSettings(": ", "", Position.END)
+        .updatePrefix()
+        .shouldHaveNewMessage("Testli: 5678");
   }
 
   @Test
@@ -26,6 +34,11 @@ class CommitPrefixCheckinHandlerTest {
         .withPluginSettings("", ": ", Position.START)
         .updatePrefix()
         .shouldHaveNewMessage("ABC-1234: This is my text");
+    update5678AzureBoardsPrefixTester()
+        .withCurrentMessage("837292: This is my text")
+        .withPluginSettings("", ": ", Position.START)
+        .updatePrefix()
+        .shouldHaveNewMessage("5678: This is my text");
   }
 
   @Test
@@ -291,14 +304,57 @@ class CommitPrefixCheckinHandlerTest {
         .shouldHaveNewMessage("     ABC-1234     ");
   }
 
+  @Test
+  void updateAzureBoardsPrefix_digitsInCommitMessage_onlyReplacedIfMatchingPrefixSettings() {
+    update5678AzureBoardsPrefixTester()
+        .withCurrentMessage("Fixed 4 bugs in 3 classes")
+        .withPluginSettings("", ": ", Position.START)
+        .updatePrefix()
+        .shouldHaveNewMessage("5678: Fixed 4 bugs in 3 classes");
+    update5678AzureBoardsPrefixTester()
+        .withCurrentMessage("Fixed 4 bugs in 3 classes")
+        .withPluginSettings("", " ", Position.START)
+        .updatePrefix()
+        .shouldHaveNewMessage("5678 Fixed 4 bugs in 3 classes");
+    update5678AzureBoardsPrefixTester()
+        .withCurrentMessage("4 bugs in 3 classes fixed")
+        .withPluginSettings("", ": ", Position.START)
+        .updatePrefix()
+        .shouldHaveNewMessage("5678: 4 bugs in 3 classes fixed");
+    update5678AzureBoardsPrefixTester()
+        .withCurrentMessage("4 bugs in 3 classes fixed")
+        .withPluginSettings("", " ", Position.START)
+        .updatePrefix()
+        .shouldHaveNewMessage("5678 bugs in 3 classes fixed");
+  }
+
+  @Test
+  void updatePrefix_existingPrefixFromDifferentTicketSystem_newPrefixAdded() {
+    updateABC1234JiraPrefixTester()
+        .withCurrentMessage("5678: Some fix")
+        .withPluginSettings("", ": ", Position.START)
+        .updatePrefix()
+        .shouldHaveNewMessage("ABC-1234: 5678: Some fix");
+    update5678AzureBoardsPrefixTester()
+        .withCurrentMessage("ABC-1234: Some fix")
+        .withPluginSettings("", ": ", Position.START)
+        .updatePrefix()
+        .shouldHaveNewMessage("5678: ABC-1234: Some fix");
+  }
+
   private static UpdatePrefixTester updateABC1234JiraPrefixTester() {
-    return new UpdatePrefixTester().withNewPrefix("ABC-1234");
+    return new UpdatePrefixTester().withNewPrefix("ABC-1234").withTicketSystem(JIRA);
+  }
+
+  private static UpdatePrefixTester update5678AzureBoardsPrefixTester() {
+    return new UpdatePrefixTester().withNewPrefix("5678").withTicketSystem(OTHER);
   }
 
   static class UpdatePrefixTester {
 
     private String currentMessage;
     private String newPrefix;
+    private TicketSystem ticketSystem;
     private String wrapLeft;
     private String wrapRight;
     private Position issueKeyPosition;
@@ -315,6 +371,11 @@ class CommitPrefixCheckinHandlerTest {
       return this;
     }
 
+    UpdatePrefixTester withTicketSystem(TicketSystem ticketSystem) {
+      this.ticketSystem = ticketSystem;
+      return this;
+    }
+
     UpdatePrefixTester withPluginSettings(
         String wrapLeft, String wrapRight, Position issueKeyPosition) {
       this.wrapLeft = wrapLeft;
@@ -326,7 +387,7 @@ class CommitPrefixCheckinHandlerTest {
     UpdatePrefixAsserter updatePrefix() {
       var newMessage =
           CommitPrefixCheckinHandler.updatePrefix(
-              newPrefix, currentMessage, wrapLeft, wrapRight, issueKeyPosition);
+              newPrefix, currentMessage, ticketSystem, wrapLeft, wrapRight, issueKeyPosition);
       return new UpdatePrefixAsserter(newMessage);
     }
   }
@@ -345,57 +406,141 @@ class CommitPrefixCheckinHandlerTest {
   }
 
   @Test
-  public void getJiraTicketName_withoutBranchType_retunsJiraTicket() {
-    TicketNameTester.getTicketNameFromBranch("ABC-1234-app-not-working")
+  public void getTicketName_withoutBranchType_retunsJiraTicket() {
+    new TicketNameTester()
+        .withTicketSystem(JIRA)
+        .getTicketFromBranch("ABC-1234-app-not-working")
         .shouldHaveTicketName("ABC-1234");
   }
 
   @Test
-  public void getJiraTicketName_reproduce() {
-    TicketNameTester.getTicketNameFromBranch("feature/DATA-4214-ab-CEP3.0-Transition-polling")
+  public void getTicketName_reproduce() {
+    new TicketNameTester()
+        .withTicketSystem(JIRA)
+        .getTicketFromBranch("feature/DATA-4214-ab-CEP3.0-Transition-polling")
         .shouldHaveTicketName("DATA-4214");
   }
 
   @Test
-  public void getJiraTicketName_featureBranchType_retunsJiraTicket() {
-    TicketNameTester.getTicketNameFromBranch("feature/ABC-1234-app-not-working")
+  public void getTicketName_featureBranchType_retunsJiraTicket() {
+    new TicketNameTester()
+        .withTicketSystem(JIRA)
+        .getTicketFromBranch("feature/ABC-1234-app-not-working")
         .shouldHaveTicketName("ABC-1234");
   }
 
   @Test
-  public void getJiraTicketName_releaseBranchType_retunsJiraTicket() {
-    TicketNameTester.getTicketNameFromBranch("release/ABC-1234-app-not-working")
+  public void getTicketName_releaseBranchType_retunsJiraTicket() {
+    new TicketNameTester()
+        .withTicketSystem(JIRA)
+        .getTicketFromBranch("release/ABC-1234-app-not-working")
         .shouldHaveTicketName("ABC-1234");
   }
 
   @Test
-  public void getJiraTicketName_bugfixBranchType_retunsJiraTicket() {
-    TicketNameTester.getTicketNameFromBranch("bugfix/ABC-1234-app-not-working")
+  public void getTicketName_bugfixBranchType_retunsJiraTicket() {
+    new TicketNameTester()
+        .withTicketSystem(JIRA)
+        .getTicketFromBranch("bugfix/ABC-1234-app-not-working")
         .shouldHaveTicketName("ABC-1234");
   }
 
   @Test
-  public void getJiraTicketName_someOtherType_retunsJiraTicket() {
-    TicketNameTester.getTicketNameFromBranch("someOtherType/ABC-1234-app-not-working")
+  public void getTicketName_someOtherType_retunsJiraTicket() {
+    new TicketNameTester()
+        .withTicketSystem(JIRA)
+        .getTicketFromBranch("someOtherType/ABC-1234-app-not-working")
         .shouldHaveTicketName("ABC-1234");
   }
 
   @Test
-  public void getJiraTicketName_emptyType_retunsJiraTicket() {
-    TicketNameTester.getTicketNameFromBranch("/ABC-1234-app-not-working")
+  public void getTicketName_emptyType_retunsJiraTicket() {
+    new TicketNameTester()
+        .withTicketSystem(JIRA)
+        .getTicketFromBranch("/ABC-1234-app-not-working")
         .shouldHaveTicketName("ABC-1234");
   }
 
   @Test
-  public void getJiraTicketName_emptySuffix_retunsJiraTicket() {
-    TicketNameTester.getTicketNameFromBranch("feature/ABC-1234").shouldHaveTicketName("ABC-1234");
+  public void getTicketName_emptySuffix_retunsJiraTicket() {
+    new TicketNameTester()
+        .withTicketSystem(JIRA)
+        .getTicketFromBranch("feature/ABC-1234")
+        .shouldHaveTicketName("ABC-1234");
+  }
+
+  @Test
+  void getTicketName_branchNameStartingWithDigit_retunsJiraTicket() {
+    new TicketNameTester()
+        .withTicketSystem(JIRA)
+        .getTicketFromBranch("ABC-1234-3-small-fixes")
+        .shouldHaveTicketName("ABC-1234");
+  }
+
+  @Test
+  void getTicketName_allDigitProjectKeyAndBranchNameStartingWithDigit_retunsJiraTicket() {
+    new TicketNameTester()
+        .withTicketSystem(JIRA)
+        .getTicketFromBranch("123-1234-3-small-fixes")
+        .shouldHaveTicketName("123-1234");
+  }
+
+  @Test
+  void getTicketName_withoutBranchType_returnsAzureBoardsWorkItem() {
+    new TicketNameTester()
+        .withTicketSystem(OTHER)
+        .getTicketFromBranch("1234-app-not-working")
+        .shouldHaveTicketName("1234");
+  }
+
+  @Test
+  void getTicketName_featureBranchType_returnsAzureBoardsWorkItem() {
+    new TicketNameTester()
+        .withTicketSystem(OTHER)
+        .getTicketFromBranch("feature/1234-app-not-working")
+        .shouldHaveTicketName("1234");
+  }
+
+  @Test
+  void getTicketName_emptyType_returnsAzureBoardsWorkItem() {
+    new TicketNameTester()
+        .withTicketSystem(OTHER)
+        .getTicketFromBranch("/1234-app-not-working")
+        .shouldHaveTicketName("1234");
+  }
+
+  @Test
+  void getTicketName_emptySuffix_returnsAzureBoardsWorkItem() {
+    new TicketNameTester()
+        .withTicketSystem(OTHER)
+        .getTicketFromBranch("feature/1234")
+        .shouldHaveTicketName("1234");
+  }
+
+  @Test
+  void getTicketName_branchNameStartingWithDigit_doesNotReturnAzureBoardsWorkItem() {
+    new TicketNameTester()
+        .withTicketSystem(JIRA)
+        .getTicketFromBranch("1234-3-small-fixes")
+        .shouldHaveTicketName("1234-3");
+    new TicketNameTester()
+        .withTicketSystem(OTHER)
+        .getTicketFromBranch("1234-3-small-fixes")
+        .shouldHaveTicketName("1234");
   }
 
   static class TicketNameTester {
 
-    static TicketNameAsserter getTicketNameFromBranch(String branchName) {
-      var ticketName = CommitPrefixCheckinHandler.getJiraTicketName(branchName);
-      return new TicketNameAsserter(ticketName);
+    private TicketSystem ticketSystem;
+
+    TicketNameTester withTicketSystem(TicketSystem ticketSystem) {
+      this.ticketSystem = ticketSystem;
+      return this;
+    }
+
+    TicketNameAsserter getTicketFromBranch(String branchName) {
+      var ticket = CommitPrefixCheckinHandler.getTicket(ticketSystem, branchName);
+      return new TicketNameAsserter(ticket);
     }
   }
 
@@ -407,9 +552,10 @@ class CommitPrefixCheckinHandlerTest {
       this.actualTicketName = actualTicketName;
     }
 
-    void shouldHaveTicketName(String expectedTicketName) {
+    TicketNameAsserter shouldHaveTicketName(String expectedTicketName) {
       assertThat(actualTicketName.isPresent(), is(true));
       assertThat(actualTicketName.get(), is(expectedTicketName));
+      return this;
     }
   }
 }
