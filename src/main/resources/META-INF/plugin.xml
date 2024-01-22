@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>commit-prefix-plugin</id>
     <name>Git Auto Prefix</name>
-    <version>1.3.0</version>
+    <version>1.4.0</version>
     <vendor url="https://github.com/thomasrepnik/idea-commit-prefix-plugin">Thomas Repnik</vendor>
 
     <change-notes><![CDATA[
