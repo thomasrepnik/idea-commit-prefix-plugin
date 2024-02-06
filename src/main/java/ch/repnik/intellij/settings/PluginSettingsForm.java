@@ -24,7 +24,7 @@ public class PluginSettingsForm extends BaseConfigurable implements SearchableCo
 
     private Project project;
 
-    private Pattern allowedCharsPattern = Pattern.compile("[ \\[\\]\\(\\)\\{\\}:\\_\\-/\\|,\\.]+");
+    private Pattern allowedCharsPattern = Pattern.compile("[ \\[\\]\\(\\)\\{\\}:\\_\\-/\\|,\\.#]+");
 
 
     public PluginSettingsForm(Project project){
@@ -121,11 +121,11 @@ public class PluginSettingsForm extends BaseConfigurable implements SearchableCo
         }
 
         if (!allowedCharsPattern.matcher(getWrapRight()).matches()){
-            throw new ConfigurationException("Wrap Right/Delimiter can only contain following chars: \" [](){}:_-/|,.\"", "Validation failed");
+            throw new ConfigurationException("Wrap Right/Delimiter can only contain following chars: \" [](){}:_-/|,.#\"", "Validation failed");
         }
 
         if (!getWrapLeft().isEmpty() && !allowedCharsPattern.matcher(getWrapLeft()).matches()){
-            throw new ConfigurationException("Wrap Left can only contain following chars: \" [](){}:_-/|,.\"", "Validation failed");
+            throw new ConfigurationException("Wrap Left can only contain following chars: \" [](){}:_-/|,.#\"", "Validation failed");
         }
     }
 
