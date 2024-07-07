@@ -17,13 +17,14 @@ import java.util.regex.Pattern;
 
 public class PluginSettingsForm extends BaseConfigurable implements SearchableConfigurable {
     private JPanel mainPanel;
+    private JComboBox cboTicketSystem;
     private JTextField txtWrapLeft;
     private JTextField txtWrapRight;
     private JComboBox cboPosition;
 
     private Project project;
 
-    private Pattern allowedCharsPattern = Pattern.compile("[ \\[\\]\\(\\)\\{\\}:\\_\\-/\\|,\\.]+");
+    private Pattern allowedCharsPattern = Pattern.compile("[ \\[\\]\\(\\)\\{\\}:\\_\\-/\\|,\\.#]+");
 
 
     public PluginSettingsForm(Project project){
@@ -48,6 +49,10 @@ public class PluginSettingsForm extends BaseConfigurable implements SearchableCo
         return mainPanel;
     }
 
+    public TicketSystem getTicketSystem() {
+        return TicketSystem.parse(cboTicketSystem.getSelectedItem().toString());
+    }
+
     public String getWrapRight(){
         return txtWrapRight.getText();
     }
@@ -59,6 +64,7 @@ public class PluginSettingsForm extends BaseConfigurable implements SearchableCo
     }
 
     public void resetEditorFrom(PluginConfigService settings){
+        this.cboTicketSystem.setSelectedItem(settings.getState().getTicketSystem().getDescription());
         this.txtWrapLeft.setText(settings.getState().getWrapLeft());
         this.txtWrapRight.setText(settings.getState().getWrapRight());
         this.cboPosition.setSelectedItem(settings.getState().getIssueKeyPosition().getStringValue());
@@ -82,13 +88,15 @@ public class PluginSettingsForm extends BaseConfigurable implements SearchableCo
     @Override
     public boolean isModified() {
         PluginConfigService.Configuration state = project.getService(PluginConfigService.class).getState();
+        TicketSystem oldTicketSystem = state.getTicketSystem();
+        TicketSystem newTicketSystem = getTicketSystem();
         String oldValueRight = state.getWrapRight();
         String newValueRight = getWrapRight();
         String oldValueLeft = state.getWrapLeft();
         String newValueLeft = getWrapRight();
         Position oldIssueKeyPosition = state.getIssueKeyPosition();
         Position newIssueKeyPosition = getIssueKeyPosition();
-        return !Objects.equals(oldValueRight, newValueRight) || !Objects.equals(oldValueLeft, newValueLeft) || oldIssueKeyPosition != newIssueKeyPosition;
+        return oldTicketSystem != newTicketSystem || !Objects.equals(oldValueRight, newValueRight) || !Objects.equals(oldValueLeft, newValueLeft) || oldIssueKeyPosition != newIssueKeyPosition;
     }
 
     @Override
@@ -98,6 +106,7 @@ public class PluginSettingsForm extends BaseConfigurable implements SearchableCo
                 validate();
                 System.out.println("Config applied");
                 PluginConfigService.Configuration state = project.getService(PluginConfigService.class).getState();
+                state.setTicketSystem(getTicketSystem());
                 state.setWrapRight(getWrapRight());
                 state.setWrapLeft(getWrapLeft());
                 state.setIssueKeyPosition(getIssueKeyPosition());
@@ -112,11 +121,11 @@ public class PluginSettingsForm extends BaseConfigurable implements SearchableCo
         }
 
         if (!allowedCharsPattern.matcher(getWrapRight()).matches()){
-            throw new ConfigurationException("Wrap Right/Delimiter can only contain following chars: \" [](){}:_-/|,.\"", "Validation failed");
+            throw new ConfigurationException("Wrap Right/Delimiter can only contain following chars: \" [](){}:_-/|,.#\"", "Validation failed");
         }
 
         if (!getWrapLeft().isEmpty() && !allowedCharsPattern.matcher(getWrapLeft()).matches()){
-            throw new ConfigurationException("Wrap Left can only contain following chars: \" [](){}:_-/|,.\"", "Validation failed");
+            throw new ConfigurationException("Wrap Left can only contain following chars: \" [](){}:_-/|,.#\"", "Validation failed");
         }
     }
 
