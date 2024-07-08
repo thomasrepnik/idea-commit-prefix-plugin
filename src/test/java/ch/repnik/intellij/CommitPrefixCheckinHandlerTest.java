@@ -2,9 +2,17 @@ package ch.repnik.intellij;
 
 import ch.repnik.intellij.settings.Position;
 import ch.repnik.intellij.settings.TicketSystem;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import lombok.With;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static ch.repnik.intellij.settings.TicketSystem.JIRA;
 import static ch.repnik.intellij.settings.TicketSystem.OTHER;
@@ -13,397 +21,277 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 class CommitPrefixCheckinHandlerTest {
 
-  @Test
-  public void updatePrefix_noMatchPositionEnd_updatedCorrectly() {
-    updateABC1234JiraPrefixTester()
-        .withCurrentMessage("Testli")
-        .withPluginSettings(": ", "", Position.END)
-        .updatePrefix()
-        .shouldHaveNewMessage("Testli: ABC-1234");
-    update5678AzureBoardsPrefixTester()
-        .withCurrentMessage("Testli")
-        .withPluginSettings(": ", "", Position.END)
-        .updatePrefix()
-        .shouldHaveNewMessage("Testli: 5678");
+  static Stream<Arguments> updatePrefix_noMatch_updatedCorrectly() {
+    UpdatePrefixTester startTemplate = new UpdatePrefixTester().withWrapLeft("").withWrapRight(": ").withIssueKeyPosition(Position.START);
+    UpdatePrefixTester endTemplate = new UpdatePrefixTester().withWrapLeft(": ").withWrapRight("").withIssueKeyPosition(Position.END);
+    return Stream.of(
+            Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage("Testli").withNewPrefix("ABC-1234"), "Testli: ABC-1234"),
+            Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage("Testli").withNewPrefix("123-4567"), "Testli: 123-4567"),
+            Arguments.of(endTemplate.withTicketSystem(OTHER).withCurrentMessage("Testli").withNewPrefix("5678"), "Testli: 5678"),
+            Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage("Testli").withNewPrefix("ABC-1234"), "ABC-1234: Testli"),
+            Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage("Testli").withNewPrefix("123-4567"), "123-4567: Testli"),
+            Arguments.of(startTemplate.withTicketSystem(OTHER).withCurrentMessage("Testli").withNewPrefix("5678"), "5678: Testli")
+    );
   }
 
-  @Test
-  public void updatePrefix_existingMessage_updatedCorrectly() {
-    updateABC1234JiraPrefixTester()
-        .withCurrentMessage("XYXY-837292: This is my text")
-        .withPluginSettings("", ": ", Position.START)
-        .updatePrefix()
-        .shouldHaveNewMessage("ABC-1234: This is my text");
-    update5678AzureBoardsPrefixTester()
-        .withCurrentMessage("837292: This is my text")
-        .withPluginSettings("", ": ", Position.START)
-        .updatePrefix()
-        .shouldHaveNewMessage("5678: This is my text");
+  @ParameterizedTest
+  @MethodSource
+  public void updatePrefix_noMatch_updatedCorrectly(UpdatePrefixTester tester, String expectedMessage) {
+    tester.updatePrefix().doAssertion(expectedMessage);
   }
 
-  @Test
-  public void updatePrefix_existingMessagePositionEnd_updatedCorrectly() {
-    updateABC1234JiraPrefixTester()
-        .withCurrentMessage("This is my text: XYXY-837292")
-        .withPluginSettings(": ", "", Position.END)
-        .updatePrefix()
-        .shouldHaveNewMessage("This is my text: ABC-1234");
+  static Stream<Arguments> updatePrefix_existingMessage_updatedCorrectly() {
+    UpdatePrefixTester startTemplate = new UpdatePrefixTester().withWrapLeft("").withWrapRight(": ").withIssueKeyPosition(Position.START);
+    UpdatePrefixTester endTemplate = new UpdatePrefixTester().withWrapLeft(": ").withWrapRight("").withIssueKeyPosition(Position.END);
+    return Stream.of(
+            Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage("XYXY-837292: This is my text").withNewPrefix("ABC-1234"), "ABC-1234: This is my text"),
+            Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage("This is my text: XYXY-837292").withNewPrefix("ABC-1234"), "This is my text: ABC-1234"),
+            Arguments.of(startTemplate.withTicketSystem(OTHER).withCurrentMessage("837292: This is my text").withNewPrefix("5678"), "5678: This is my text"),
+            Arguments.of(endTemplate.withTicketSystem(OTHER).withCurrentMessage("This is my text: 837292").withNewPrefix("5678"), "This is my text: 5678")
+    );
   }
 
-  @Test
-  public void updatePrefix_delimiterWithoutMessage_updatedCorrectly() {
-    updateABC1234JiraPrefixTester()
-        .withCurrentMessage("XYXY-837292:")
-        .withPluginSettings("", ": ", Position.START)
-        .updatePrefix()
-        .shouldHaveNewMessage("ABC-1234: ");
+  @ParameterizedTest
+  @MethodSource
+  public void updatePrefix_existingMessage_updatedCorrectly(UpdatePrefixTester tester, String expectedMessage) {
+    tester.updatePrefix().doAssertion(expectedMessage);
   }
 
-  @Test
-  public void updatePrefix_delimiterWithoutMessagePositionEnd_updatedCorrectly() {
-    updateABC1234JiraPrefixTester()
-        .withCurrentMessage(": XYXY-837292")
-        .withPluginSettings(": ", "", Position.END)
-        .updatePrefix()
-        .shouldHaveNewMessage(": ABC-1234");
+  static Stream<Arguments> updatePrefix_delimiterWithoutMessage_updatedCorrectly() {
+    UpdatePrefixTester startTemplate = new UpdatePrefixTester().withWrapLeft("").withWrapRight(": ").withIssueKeyPosition(Position.START);
+    UpdatePrefixTester endTemplate = new UpdatePrefixTester().withWrapLeft(": ").withWrapRight("").withIssueKeyPosition(Position.END);
+    return Stream.of(
+            Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage("XYXY-837292:").withNewPrefix("ABC-1234"), "ABC-1234: "),
+            Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage(": XYXY-837292").withNewPrefix("ABC-1234"), ": ABC-1234"),
+            Arguments.of(startTemplate.withTicketSystem(OTHER).withCurrentMessage("837292: ").withNewPrefix("5678"), "5678: "),
+            Arguments.of(endTemplate.withTicketSystem(OTHER).withCurrentMessage(": 837292").withNewPrefix("5678"), ": 5678")
+    );
   }
 
-  @Test
-  public void updatePrefix_wrongDelimiter_issueNotRecognized() {
-    updateABC1234JiraPrefixTester()
-        .withCurrentMessage("XYXY-837292: This is my text")
-        .withPluginSettings("", " | ", Position.START)
-        .updatePrefix()
-        .shouldHaveNewMessage("ABC-1234 | XYXY-837292: This is my text");
+  @ParameterizedTest
+  @MethodSource
+  public void updatePrefix_delimiterWithoutMessage_updatedCorrectly(UpdatePrefixTester tester, String expectedMessage) {
+    tester.updatePrefix().doAssertion(expectedMessage);
   }
 
-  @Test
-  public void updatePrefix_wrongDelimiterPositionEnd_issueNotRecognized() {
-    updateABC1234JiraPrefixTester()
-        .withCurrentMessage("This is my text: XYXY-837292")
-        .withPluginSettings(" | ", "", Position.END)
-        .updatePrefix()
-        .shouldHaveNewMessage("This is my text: XYXY-837292 | ABC-1234");
+  static Stream<Arguments> updatePrefix_wrongDelimiter_issueNotRecognized() {
+    UpdatePrefixTester startTemplate = new UpdatePrefixTester().withWrapLeft("").withWrapRight(" | ").withIssueKeyPosition(Position.START);
+    UpdatePrefixTester endTemplate = new UpdatePrefixTester().withWrapLeft(" | ").withWrapRight("").withIssueKeyPosition(Position.END);
+
+    return Stream.of(
+            Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage("XYXY-837292: This is my text").withNewPrefix("ABC-1234"), "ABC-1234 | XYXY-837292: This is my text"),
+            Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage("This is my text: XYXY-837292").withNewPrefix("ABC-1234"), "This is my text: XYXY-837292 | ABC-1234"),
+            Arguments.of(startTemplate.withTicketSystem(OTHER).withCurrentMessage("837292: This is my text").withNewPrefix("5678"), "5678 | 837292: This is my text"),
+            Arguments.of(endTemplate.withTicketSystem(OTHER).withCurrentMessage("This is my text: 837292").withNewPrefix("5678"), "This is my text: 837292 | 5678")
+    );
   }
 
-  @Test
-  public void updatePrefix_specialDelimiter_updatedCorrectly() {
-    updateABC1234JiraPrefixTester()
-        .withCurrentMessage(null)
-        .withPluginSettings(" [](){}:_-/|,.", " [](){}:_-/|,.", Position.START)
-        .updatePrefix()
-        .shouldHaveNewMessage(" [](){}:_-/|,.ABC-1234 [](){}:_-/|,.");
+  @ParameterizedTest
+  @MethodSource
+  public void updatePrefix_wrongDelimiter_issueNotRecognized(UpdatePrefixTester tester, String expectedMessage) {
+    tester.updatePrefix().doAssertion(expectedMessage);
   }
 
-  @Test
-  public void updatePrefix_specialDelimiterPositionEnd_updatedCorrectly() {
-    updateABC1234JiraPrefixTester()
-        .withCurrentMessage(null)
-        .withPluginSettings(" [](){}:_-/|,.", " [](){}:_-/|,.", Position.END)
-        .updatePrefix()
-        .shouldHaveNewMessage(" [](){}:_-/|,.ABC-1234 [](){}:_-/|,.");
+  static Stream<Arguments> updatePrefix_specialDelimiter_updatedCorrectly() {
+    UpdatePrefixTester startTemplate = new UpdatePrefixTester().withWrapLeft(" [](){}:_-/|,.").withWrapRight(" [](){}:_-/|,.").withIssueKeyPosition(Position.START);
+    UpdatePrefixTester endTemplate = new UpdatePrefixTester().withWrapLeft(" [](){}:_-/|,.").withWrapRight(" [](){}:_-/|,.").withIssueKeyPosition(Position.END);
+
+    return Stream.of(
+            Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage(null).withNewPrefix("ABC-1234"), " [](){}:_-/|,.ABC-1234 [](){}:_-/|,."),
+            Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage(null).withNewPrefix("ABC-1234"), " [](){}:_-/|,.ABC-1234 [](){}:_-/|,."),
+            Arguments.of(startTemplate.withTicketSystem(OTHER).withCurrentMessage(null).withNewPrefix("5678"), " [](){}:_-/|,.5678 [](){}:_-/|,."),
+            Arguments.of(endTemplate.withTicketSystem(OTHER).withCurrentMessage(null).withNewPrefix("5678"), " [](){}:_-/|,.5678 [](){}:_-/|,.")
+    );
   }
 
-  @Test
-  public void updatePrefix_doubledPattern_updatedCorrectly() {
-    updateABC1234JiraPrefixTester()
-        .withCurrentMessage("XYXY-837292: XYZ-11 This is my text")
-        .withPluginSettings("", ": ", Position.START)
-        .updatePrefix()
-        .shouldHaveNewMessage("ABC-1234: XYZ-11 This is my text");
+  @ParameterizedTest
+  @MethodSource
+  public void updatePrefix_specialDelimiter_updatedCorrectly(UpdatePrefixTester tester, String expectedMessage) {
+    tester.updatePrefix().doAssertion(expectedMessage);
   }
 
-  @Test
-  public void updatePrefix_doubledPatternPositionEnd_updatedCorrectly() {
-    updateABC1234JiraPrefixTester()
-        .withCurrentMessage("XYZ-11 This is my text: XYXY-837292")
-        .withPluginSettings(": ", "", Position.END)
-        .updatePrefix()
-        .shouldHaveNewMessage("XYZ-11 This is my text: ABC-1234");
+  static Stream<Arguments> updatePrefix_doubledPattern_updatedCorrectly() {
+    UpdatePrefixTester startTemplate = new UpdatePrefixTester().withWrapLeft("").withWrapRight(": ").withIssueKeyPosition(Position.START);
+    UpdatePrefixTester endTemplate = new UpdatePrefixTester().withWrapLeft(": ").withWrapRight("").withIssueKeyPosition(Position.END);
+
+    return Stream.of(
+            Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage("XYXY-837292: XYZ-11 This is my text").withNewPrefix("ABC-1234"), "ABC-1234: XYZ-11 This is my text"),
+            Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage("XYZ-11 This is my text: XYXY-837292").withNewPrefix("ABC-1234"), "XYZ-11 This is my text: ABC-1234"),
+            Arguments.of(startTemplate.withTicketSystem(OTHER).withCurrentMessage("1234: 9999 This is my text").withNewPrefix("5678"), "5678: 9999 This is my text"),
+            Arguments.of(endTemplate.withTicketSystem(OTHER).withCurrentMessage("9999 This is my text: 1234").withNewPrefix("5678"), "9999 This is my text: 5678")
+
+    );
   }
 
-  @Test
-  public void updatePrefix_null_updatedCorrectly() {
-    updateABC1234JiraPrefixTester()
-        .withCurrentMessage(null)
-        .withPluginSettings("", ": ", Position.START)
-        .updatePrefix()
-        .shouldHaveNewMessage("ABC-1234: ");
+
+  @ParameterizedTest
+  @MethodSource
+  public void updatePrefix_doubledPattern_updatedCorrectly(UpdatePrefixTester tester, String expectedMessage) {
+    tester.updatePrefix().doAssertion(expectedMessage);
   }
 
-  @Test
-  public void updatePrefix_nullPositionEnd_updatedCorrectly() {
-    updateABC1234JiraPrefixTester()
-        .withCurrentMessage(null)
-        .withPluginSettings(": ", "", Position.END)
-        .updatePrefix()
-        .shouldHaveNewMessage(": ABC-1234");
+
+  static Stream<Arguments> updatePrefix_null_updatedCorrectly() {
+    UpdatePrefixTester startTemplate = new UpdatePrefixTester().withWrapLeft("").withWrapRight(": ").withIssueKeyPosition(Position.START);
+    UpdatePrefixTester endTemplate = new UpdatePrefixTester().withWrapLeft(": ").withWrapRight("").withIssueKeyPosition(Position.END);
+
+    return Stream.of(
+            Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage(null).withNewPrefix("ABC-1234"), "ABC-1234: "),
+            Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage(null).withNewPrefix("ABC-1234"), ": ABC-1234"),
+            Arguments.of(startTemplate.withTicketSystem(OTHER).withCurrentMessage(null).withNewPrefix("5678"), "5678: "),
+            Arguments.of(endTemplate.withTicketSystem(OTHER).withCurrentMessage(null).withNewPrefix("5678"), ": 5678")
+
+    );
   }
 
-  @Test
-  public void updatePrefix_emptyMessage_updatedCorrectly() {
-    updateABC1234JiraPrefixTester()
-        .withCurrentMessage("")
-        .withPluginSettings("", ": ", Position.START)
-        .updatePrefix()
-        .shouldHaveNewMessage("ABC-1234: ");
+  @ParameterizedTest
+  @MethodSource
+  public void updatePrefix_null_updatedCorrectly(UpdatePrefixTester tester, String expectedMessage) {
+    tester.updatePrefix().doAssertion(expectedMessage);
   }
 
-  @Test
-  public void updatePrefix_emptyMessagePositionEnd_updatedCorrectly() {
-    updateABC1234JiraPrefixTester()
-        .withCurrentMessage("")
-        .withPluginSettings(": ", "", Position.END)
-        .updatePrefix()
-        .shouldHaveNewMessage(": ABC-1234");
+  static Stream<Arguments> updatePrefix_emptyMessage_updatedCorrectly() {
+    UpdatePrefixTester startTemplate = new UpdatePrefixTester().withWrapLeft("").withWrapRight(": ").withIssueKeyPosition(Position.START);
+    UpdatePrefixTester endTemplate = new UpdatePrefixTester().withWrapLeft(": ").withWrapRight("").withIssueKeyPosition(Position.END);
+
+    return Stream.of(
+            Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage("").withNewPrefix("ABC-1234"), "ABC-1234: "),
+            Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage("").withNewPrefix("ABC-1234"), ": ABC-1234"),
+            Arguments.of(startTemplate.withTicketSystem(OTHER).withCurrentMessage("").withNewPrefix("5678"), "5678: "),
+            Arguments.of(endTemplate.withTicketSystem(OTHER).withCurrentMessage("").withNewPrefix("5678"), ": 5678")
+
+    );
   }
 
-  @Test
-  public void updatePrefix_blankMessage_updatedCorrectly() {
-    updateABC1234JiraPrefixTester()
-        .withCurrentMessage("       ")
-        .withPluginSettings("", ": ", Position.START)
-        .updatePrefix()
-        .shouldHaveNewMessage("ABC-1234: ");
+  @ParameterizedTest
+  @MethodSource
+  public void updatePrefix_emptyMessage_updatedCorrectly(UpdatePrefixTester tester, String expectedMessage) {
+    tester.updatePrefix().doAssertion(expectedMessage);
   }
 
-  @Test
-  public void updatePrefix_blankMessagePositionEnd_updatedCorrectly() {
-    updateABC1234JiraPrefixTester()
-        .withCurrentMessage("       ")
-        .withPluginSettings(": ", "", Position.END)
-        .updatePrefix()
-        .shouldHaveNewMessage(": ABC-1234");
+  static Stream<Arguments> updatePrefix_blankMessage_updatedCorrectly() {
+    UpdatePrefixTester startTemplate = new UpdatePrefixTester().withWrapLeft("").withWrapRight(": ").withIssueKeyPosition(Position.START);
+    UpdatePrefixTester endTemplate = new UpdatePrefixTester().withWrapLeft(": ").withWrapRight("").withIssueKeyPosition(Position.END);
+
+    return Stream.of(
+            Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage("       ").withNewPrefix("ABC-1234"), "ABC-1234: "),
+            Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage("       ").withNewPrefix("ABC-1234"), ": ABC-1234"),
+            Arguments.of(startTemplate.withTicketSystem(OTHER).withCurrentMessage("       ").withNewPrefix("5678"), "5678: "),
+            Arguments.of(endTemplate.withTicketSystem(OTHER).withCurrentMessage("       ").withNewPrefix("5678"), ": 5678")
+
+    );
   }
 
-  @Test
-  public void updatePrefix_existingMessageWithBlanks_updatedCorrectly() {
-    updateABC1234JiraPrefixTester()
-        .withCurrentMessage("   XYXY-837292:  This is a Test     ")
-        .withPluginSettings("", ": ", Position.START)
-        .updatePrefix()
-        .shouldHaveNewMessage("   ABC-1234:  This is a Test     ");
+  @ParameterizedTest
+  @MethodSource
+  public void updatePrefix_blankMessage_updatedCorrectly(UpdatePrefixTester tester, String expectedMessage) {
+    tester.updatePrefix().doAssertion(expectedMessage);
   }
 
-  @Test
-  public void updatePrefix_existingMessageWithBlanksPositionEnd_updatedCorrectly() {
-    updateABC1234JiraPrefixTester()
-        .withCurrentMessage("   This is a Test  : XYXY-837292     ")
-        .withPluginSettings(": ", "", Position.END)
-        .updatePrefix()
-        .shouldHaveNewMessage("   This is a Test  : ABC-1234     ");
+
+  static Stream<Arguments> updatePrefix_existingMessageWithBlanks_updatedCorrectly() {
+    UpdatePrefixTester startTemplate = new UpdatePrefixTester().withWrapLeft("").withWrapRight(": ").withIssueKeyPosition(Position.START);
+    UpdatePrefixTester endTemplate = new UpdatePrefixTester().withWrapLeft(": ").withWrapRight("").withIssueKeyPosition(Position.END);
+
+    return Stream.of(
+            Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage("   XYXY-837292:  This is a Test     ").withNewPrefix("ABC-1234"), "   ABC-1234:  This is a Test     "),
+            Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage("   This is a Test  : XYXY-837292     ").withNewPrefix("ABC-1234"), "   This is a Test  : ABC-1234     "),
+            Arguments.of(startTemplate.withTicketSystem(OTHER).withCurrentMessage("   1111:  This is a Test     ").withNewPrefix("5678"), "   5678:  This is a Test     "),
+            Arguments.of(endTemplate.withTicketSystem(OTHER).withCurrentMessage("   This is a Test  : 1111     ").withNewPrefix("5678"), "   This is a Test  : 5678     ")
+
+    );
   }
 
-  @Test
-  public void updatePrefix_existingMessageWithPrefixInText_updatedCorrectly() {
-    updateABC1234JiraPrefixTester()
-        .withCurrentMessage("   According to issue XYXY-837292: this fix...     ")
-        .withPluginSettings("", ": ", Position.START)
-        .updatePrefix()
-        .shouldHaveNewMessage("ABC-1234:    According to issue XYXY-837292: this fix...     ");
+  @ParameterizedTest
+  @MethodSource
+  public void updatePrefix_existingMessageWithBlanks_updatedCorrectly(UpdatePrefixTester tester, String expectedMessage) {
+    tester.updatePrefix().doAssertion(expectedMessage);
   }
 
-  // TESTS WITH WRAP LEFT
 
-  @Test
-  public void updatePrefix_existingMessageWrapLeft_updatedCorrectly() {
-    updateABC1234JiraPrefixTester()
-        .withCurrentMessage("[XYXY-837292]: This is my text")
-        .withPluginSettings("[", "]: ", Position.START)
-        .updatePrefix()
-        .shouldHaveNewMessage("[ABC-1234]: This is my text");
+  static Stream<Arguments> updatePrefix_existingMessageWithPrefixInText_updatedCorrectly() {
+    UpdatePrefixTester startTemplate = new UpdatePrefixTester().withWrapLeft("").withWrapRight(": ").withIssueKeyPosition(Position.START);
+    UpdatePrefixTester endTemplate = new UpdatePrefixTester().withWrapLeft(": ").withWrapRight("").withIssueKeyPosition(Position.END);
+
+    return Stream.of(
+            Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage("   According to issue XYXY-837292: this fix...     ").withNewPrefix("ABC-1234"), "ABC-1234:    According to issue XYXY-837292: this fix...     "),
+            Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage("   According to issue : XYXY-837292 this fix...     ").withNewPrefix("ABC-1234"), "   According to issue : XYXY-837292 this fix...     : ABC-1234"),
+            Arguments.of(startTemplate.withTicketSystem(OTHER).withCurrentMessage("   According to issue 1111: this fix...     ").withNewPrefix("5678"), "5678:    According to issue 1111: this fix...     "),
+            Arguments.of(endTemplate.withTicketSystem(OTHER).withCurrentMessage("   According to issue : 1111 this fix...     ").withNewPrefix("5678"), "   According to issue : 1111 this fix...     : 5678")
+
+    );
   }
 
-  @Test
-  public void updatePrefix_delimiterWithoutMessageWrapLeft_updatedCorrectly() {
-    updateABC1234JiraPrefixTester()
-        .withCurrentMessage("[XYXY-837292]:")
-        .withPluginSettings("[", "]: ", Position.START)
-        .updatePrefix()
-        .shouldHaveNewMessage("[ABC-1234]: ");
+  @ParameterizedTest
+  @MethodSource
+  public void updatePrefix_existingMessageWithPrefixInText_updatedCorrectly(UpdatePrefixTester tester, String expectedMessage) {
+    tester.updatePrefix().doAssertion(expectedMessage);
   }
 
-  @Test
-  public void updatePrefix_wrongDelimiterWrapLeft_issueNotRecognized() {
-    updateABC1234JiraPrefixTester()
-        .withCurrentMessage("[XYXY-837292]: This is my text")
-        .withPluginSettings("[", " | ", Position.START)
-        .updatePrefix()
-        .shouldHaveNewMessage("[ABC-1234 | [XYXY-837292]: This is my text");
+
+
+  static Stream<Arguments> updatePrefix_noMessageButWrappedInBlanks_updatedCorrectly() {
+    UpdatePrefixTester startTemplate = new UpdatePrefixTester().withWrapLeft("     ").withWrapRight("     ").withIssueKeyPosition(Position.START);
+    UpdatePrefixTester endTemplate = new UpdatePrefixTester().withWrapLeft("     ").withWrapRight("     ").withIssueKeyPosition(Position.END);
+
+    return Stream.of(
+            Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage(null).withNewPrefix("ABC-1234"), "     ABC-1234     "),
+            Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage(null).withNewPrefix("ABC-1234"), "     ABC-1234     "),
+            Arguments.of(startTemplate.withTicketSystem(OTHER).withCurrentMessage(null).withNewPrefix("5678"), "     5678     "),
+            Arguments.of(endTemplate.withTicketSystem(OTHER).withCurrentMessage(null).withNewPrefix("5678"), "     5678     ")
+
+    );
   }
 
-  @Test
-  public void updatePrefix_specialDelimiterWrapLeft_updatedCorrectly() {
-    updateABC1234JiraPrefixTester()
-        .withCurrentMessage(null)
-        .withPluginSettings(" [](){}:_-/|,.", " [](){}:_-/|,.", Position.START)
-        .updatePrefix()
-        .shouldHaveNewMessage(" [](){}:_-/|,.ABC-1234 [](){}:_-/|,.");
+
+  @ParameterizedTest
+  @MethodSource
+  public void updatePrefix_noMessageButWrappedInBlanks_updatedCorrectly(UpdatePrefixTester tester, String expectedMessage) {
+    tester.updatePrefix().doAssertion(expectedMessage);
   }
 
-  @Test
-  public void updatePrefix_doubledPatternWrapLeft_updatedCorrectly() {
-    updateABC1234JiraPrefixTester()
-        .withCurrentMessage("[XYXY-837292]: XYZ-11 This is my text")
-        .withPluginSettings("[", "]: ", Position.START)
-        .updatePrefix()
-        .shouldHaveNewMessage("[ABC-1234]: XYZ-11 This is my text");
+
+  static Stream<Arguments> updateAzureBoardsPrefix_digitsInCommitMessage_onlyReplacedIfMatchingPrefixSettings() {
+    UpdatePrefixTester startTemplate = new UpdatePrefixTester().withTicketSystem(OTHER).withWrapLeft("").withWrapRight(": ").withIssueKeyPosition(Position.START);
+    UpdatePrefixTester endTemplate = new UpdatePrefixTester().withTicketSystem(OTHER).withWrapLeft(": ").withWrapRight("").withIssueKeyPosition(Position.END);
+
+    return Stream.of(
+            Arguments.of(startTemplate.withCurrentMessage("Fixed 4 bugs in 3 classes").withNewPrefix("5678"), "5678: Fixed 4 bugs in 3 classes"),
+            Arguments.of(startTemplate.withCurrentMessage("4 bugs in 3 classes fixed").withNewPrefix("5678"), "5678: 4 bugs in 3 classes fixed"),
+            Arguments.of(endTemplate.withCurrentMessage("Fixed 4 bugs in 3 classes").withNewPrefix("5678"), "Fixed 4 bugs in 3 classes: 5678"),
+            Arguments.of(endTemplate.withCurrentMessage("4 bugs in 3 classes fixed").withNewPrefix("5678"), "4 bugs in 3 classes fixed: 5678")
+    );
   }
 
-  @Test
-  public void updatePrefix_nullWrapLeft_updatedCorrectly() {
-    updateABC1234JiraPrefixTester()
-        .withCurrentMessage(null)
-        .withPluginSettings("[", "]: ", Position.START)
-        .updatePrefix()
-        .shouldHaveNewMessage("[ABC-1234]: ");
+  @ParameterizedTest
+  @MethodSource
+  void updateAzureBoardsPrefix_digitsInCommitMessage_onlyReplacedIfMatchingPrefixSettings(UpdatePrefixTester tester, String expectedMessage) {
+    tester.updatePrefix().doAssertion(expectedMessage);
   }
 
-  @Test
-  public void updatePrefix_emptyMessageWrapLeft_updatedCorrectly() {
-    updateABC1234JiraPrefixTester()
-        .withCurrentMessage("")
-        .withPluginSettings("[", "]: ", Position.START)
-        .updatePrefix()
-        .shouldHaveNewMessage("[ABC-1234]: ");
+
+  static Stream<Arguments> updatePrefix_existingPrefixFromDifferentTicketSystem_newPrefixAdded() {
+    UpdatePrefixTester startJiraTemplate = new UpdatePrefixTester().withTicketSystem(JIRA).withWrapLeft("").withWrapRight(": ").withIssueKeyPosition(Position.START);
+    UpdatePrefixTester endJiraTemplate = new UpdatePrefixTester().withTicketSystem(JIRA).withWrapLeft(": ").withWrapRight("").withIssueKeyPosition(Position.END);
+    UpdatePrefixTester startOtherTemplate = new UpdatePrefixTester().withTicketSystem(OTHER).withWrapLeft("").withWrapRight(": ").withIssueKeyPosition(Position.START);
+    UpdatePrefixTester endOtherTemplate = new UpdatePrefixTester().withTicketSystem(OTHER).withWrapLeft(": ").withWrapRight("").withIssueKeyPosition(Position.END);
+
+    return Stream.of(
+            Arguments.of(startJiraTemplate.withCurrentMessage("5678: Some fix").withNewPrefix("ABC-1234"), "ABC-1234: 5678: Some fix"),
+            Arguments.of(startOtherTemplate.withCurrentMessage("ABC-1234: Some fix").withNewPrefix("5678"), "5678: ABC-1234: Some fix"),
+            Arguments.of(endJiraTemplate.withCurrentMessage("Some fix: 5678").withNewPrefix("ABC-1234"), "Some fix: 5678: ABC-1234"),
+            Arguments.of(endOtherTemplate.withCurrentMessage("Some fix: ABC-1234").withNewPrefix("5678"), "Some fix: ABC-1234: 5678")
+    );
   }
 
-  @Test
-  public void updatePrefix_blankMessageWrapLeft_updatedCorrectly() {
-    updateABC1234JiraPrefixTester()
-        .withCurrentMessage("       ")
-        .withPluginSettings("[", "]: ", Position.START)
-        .updatePrefix()
-        .shouldHaveNewMessage("[ABC-1234]: ");
+  @ParameterizedTest
+  @MethodSource
+  void updatePrefix_existingPrefixFromDifferentTicketSystem_newPrefixAdded(UpdatePrefixTester tester, String expectedMessage) {
+    tester.updatePrefix().doAssertion(expectedMessage);
   }
 
-  @Test
-  public void updatePrefix_existingMessageWithBlanksWrapLeft_updatedCorrectly() {
-    updateABC1234JiraPrefixTester()
-        .withCurrentMessage("   [XYXY-837292]:  This is a Test     ")
-        .withPluginSettings("[", "]: ", Position.START)
-        .updatePrefix()
-        .shouldHaveNewMessage("   [ABC-1234]:  This is a Test     ");
-  }
 
-  @Test
-  public void updatePrefix_existingMessageWithPrefixInTextWrapLeft_updatedCorrectly() {
-    updateABC1234JiraPrefixTester()
-        .withCurrentMessage("   According to issue XYXY-837292: this fix...     ")
-        .withPluginSettings("[", "]: ", Position.START)
-        .updatePrefix()
-        .shouldHaveNewMessage("[ABC-1234]:    According to issue XYXY-837292: this fix...     ");
-  }
 
-  @Test
-  public void updatePrefix_noMessageButWrappedInBlanks_updatedCorrectly() {
-    updateABC1234JiraPrefixTester()
-        .withCurrentMessage(null)
-        .withPluginSettings("     ", "     ", Position.START)
-        .updatePrefix()
-        .shouldHaveNewMessage("     ABC-1234     ");
-  }
-
-  @Test
-  void updateAzureBoardsPrefix_digitsInCommitMessage_onlyReplacedIfMatchingPrefixSettings() {
-    update5678AzureBoardsPrefixTester()
-        .withCurrentMessage("Fixed 4 bugs in 3 classes")
-        .withPluginSettings("", ": ", Position.START)
-        .updatePrefix()
-        .shouldHaveNewMessage("5678: Fixed 4 bugs in 3 classes");
-    update5678AzureBoardsPrefixTester()
-        .withCurrentMessage("Fixed 4 bugs in 3 classes")
-        .withPluginSettings("", " ", Position.START)
-        .updatePrefix()
-        .shouldHaveNewMessage("5678 Fixed 4 bugs in 3 classes");
-    update5678AzureBoardsPrefixTester()
-        .withCurrentMessage("4 bugs in 3 classes fixed")
-        .withPluginSettings("", ": ", Position.START)
-        .updatePrefix()
-        .shouldHaveNewMessage("5678: 4 bugs in 3 classes fixed");
-    update5678AzureBoardsPrefixTester()
-        .withCurrentMessage("4 bugs in 3 classes fixed")
-        .withPluginSettings("", " ", Position.START)
-        .updatePrefix()
-        .shouldHaveNewMessage("5678 bugs in 3 classes fixed");
-  }
-
-  @Test
-  void updatePrefix_existingPrefixFromDifferentTicketSystem_newPrefixAdded() {
-    updateABC1234JiraPrefixTester()
-        .withCurrentMessage("5678: Some fix")
-        .withPluginSettings("", ": ", Position.START)
-        .updatePrefix()
-        .shouldHaveNewMessage("ABC-1234: 5678: Some fix");
-    update5678AzureBoardsPrefixTester()
-        .withCurrentMessage("ABC-1234: Some fix")
-        .withPluginSettings("", ": ", Position.START)
-        .updatePrefix()
-        .shouldHaveNewMessage("5678: ABC-1234: Some fix");
-  }
-
-  private static UpdatePrefixTester updateABC1234JiraPrefixTester() {
-    return new UpdatePrefixTester().withNewPrefix("ABC-1234").withTicketSystem(JIRA);
-  }
-
-  private static UpdatePrefixTester update5678AzureBoardsPrefixTester() {
-    return new UpdatePrefixTester().withNewPrefix("5678").withTicketSystem(OTHER);
-  }
-
-  static class UpdatePrefixTester {
-
-    private String currentMessage;
-    private String newPrefix;
-    private TicketSystem ticketSystem;
-    private String wrapLeft;
-    private String wrapRight;
-    private Position issueKeyPosition;
-
-    UpdatePrefixTester() {}
-
-    UpdatePrefixTester withCurrentMessage(String currentMessage) {
-      this.currentMessage = currentMessage;
-      return this;
-    }
-
-    UpdatePrefixTester withNewPrefix(String newPrefix) {
-      this.newPrefix = newPrefix;
-      return this;
-    }
-
-    UpdatePrefixTester withTicketSystem(TicketSystem ticketSystem) {
-      this.ticketSystem = ticketSystem;
-      return this;
-    }
-
-    UpdatePrefixTester withPluginSettings(
-        String wrapLeft, String wrapRight, Position issueKeyPosition) {
-      this.wrapLeft = wrapLeft;
-      this.wrapRight = wrapRight;
-      this.issueKeyPosition = issueKeyPosition;
-      return this;
-    }
-
-    UpdatePrefixAsserter updatePrefix() {
-      var newMessage =
-          CommitPrefixCheckinHandler.updatePrefix(
-              newPrefix, currentMessage, ticketSystem, wrapLeft, wrapRight, issueKeyPosition);
-      return new UpdatePrefixAsserter(newMessage);
-    }
-  }
-
-  static class UpdatePrefixAsserter {
-
-    private final String actualMessage;
-
-    UpdatePrefixAsserter(String actualMessage) {
-      this.actualMessage = actualMessage;
-    }
-
-    void shouldHaveNewMessage(String expectedMessage) {
-      assertThat(actualMessage, is(expectedMessage));
-    }
-  }
 
   @Test
   public void getTicketName_withoutBranchType_retunsJiraTicket() {
@@ -529,6 +417,43 @@ class CommitPrefixCheckinHandlerTest {
         .shouldHaveTicketName("1234");
   }
 
+  @With
+  @AllArgsConstructor
+  @NoArgsConstructor
+  static class UpdatePrefixTester {
+
+    private String currentMessage;
+    private String newPrefix;
+    private TicketSystem ticketSystem;
+    private String wrapLeft;
+    private String wrapRight;
+    private Position issueKeyPosition;
+
+
+    UpdatePrefixAsserter updatePrefix() {
+      String newMessage =
+              CommitPrefixCheckinHandler.updatePrefix(
+                      newPrefix, currentMessage, ticketSystem, wrapLeft, wrapRight, issueKeyPosition);
+      return new UpdatePrefixAsserter(newMessage);
+    }
+
+    @Override
+    public String toString() {
+      return String.format("%s, %s", ticketSystem.toString(), issueKeyPosition.toString());
+    }
+  }
+
+  @RequiredArgsConstructor
+  static class UpdatePrefixAsserter {
+
+    private final String actualMessage;
+
+    void doAssertion(String expectedValue) {
+      assertThat(actualMessage, is(expectedValue));
+    }
+  }
+
+
   static class TicketNameTester {
 
     private TicketSystem ticketSystem;
@@ -539,7 +464,7 @@ class CommitPrefixCheckinHandlerTest {
     }
 
     TicketNameAsserter getTicketFromBranch(String branchName) {
-      var ticket = CommitPrefixCheckinHandler.getTicket(ticketSystem, branchName);
+      Optional<String> ticket = CommitPrefixCheckinHandler.getTicket(ticketSystem, branchName);
       return new TicketNameAsserter(ticket);
     }
   }
@@ -552,10 +477,9 @@ class CommitPrefixCheckinHandlerTest {
       this.actualTicketName = actualTicketName;
     }
 
-    TicketNameAsserter shouldHaveTicketName(String expectedTicketName) {
+    void shouldHaveTicketName(String expectedTicketName) {
       assertThat(actualTicketName.isPresent(), is(true));
       assertThat(actualTicketName.get(), is(expectedTicketName));
-      return this;
     }
   }
 }
