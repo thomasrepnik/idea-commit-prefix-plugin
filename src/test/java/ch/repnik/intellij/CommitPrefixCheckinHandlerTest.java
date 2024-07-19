@@ -6,7 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.With;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -47,7 +46,10 @@ class CommitPrefixCheckinHandlerTest {
             Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage("XYXY-837292: This is my text").withNewPrefix("ABC-1234"), "ABC-1234: This is my text"),
             Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage("This is my text: XYXY-837292").withNewPrefix("ABC-1234"), "This is my text: ABC-1234"),
             Arguments.of(startTemplate.withTicketSystem(OTHER).withCurrentMessage("837292: This is my text").withNewPrefix("5678"), "5678: This is my text"),
-            Arguments.of(endTemplate.withTicketSystem(OTHER).withCurrentMessage("This is my text: 837292").withNewPrefix("5678"), "This is my text: 5678")
+            Arguments.of(endTemplate.withTicketSystem(OTHER).withCurrentMessage("This is my text: 837292").withNewPrefix("5678"), "This is my text: 5678"),
+            Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage("5678-837292: This is my text").withNewPrefix("2222-1234"), "2222-1234: This is my text"),
+            Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage("This is my text: 5678-837292").withNewPrefix("2222-1234"), "This is my text: 2222-1234")
+
     );
   }
 
@@ -63,6 +65,8 @@ class CommitPrefixCheckinHandlerTest {
     return Stream.of(
             Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage("XYXY-837292:").withNewPrefix("ABC-1234"), "ABC-1234: "),
             Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage(": XYXY-837292").withNewPrefix("ABC-1234"), ": ABC-1234"),
+            Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage("5678-837292:").withNewPrefix("2222-1234"), "2222-1234: "),
+            Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage(": 5678-837292").withNewPrefix("2222-1234"), ": 2222-1234"),
             Arguments.of(startTemplate.withTicketSystem(OTHER).withCurrentMessage("837292: ").withNewPrefix("5678"), "5678: "),
             Arguments.of(endTemplate.withTicketSystem(OTHER).withCurrentMessage(": 837292").withNewPrefix("5678"), ": 5678")
     );
@@ -81,6 +85,8 @@ class CommitPrefixCheckinHandlerTest {
     return Stream.of(
             Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage("XYXY-837292: This is my text").withNewPrefix("ABC-1234"), "ABC-1234 | XYXY-837292: This is my text"),
             Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage("This is my text: XYXY-837292").withNewPrefix("ABC-1234"), "This is my text: XYXY-837292 | ABC-1234"),
+            Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage("5678-837292: This is my text").withNewPrefix("2222-1234"), "2222-1234 | 5678-837292: This is my text"),
+            Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage("This is my text: 5678-837292").withNewPrefix("2222-1234"), "This is my text: 5678-837292 | 2222-1234"),
             Arguments.of(startTemplate.withTicketSystem(OTHER).withCurrentMessage("837292: This is my text").withNewPrefix("5678"), "5678 | 837292: This is my text"),
             Arguments.of(endTemplate.withTicketSystem(OTHER).withCurrentMessage("This is my text: 837292").withNewPrefix("5678"), "This is my text: 837292 | 5678")
     );
@@ -99,6 +105,8 @@ class CommitPrefixCheckinHandlerTest {
     return Stream.of(
             Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage(null).withNewPrefix("ABC-1234"), " [](){}:_-/|,.ABC-1234 [](){}:_-/|,."),
             Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage(null).withNewPrefix("ABC-1234"), " [](){}:_-/|,.ABC-1234 [](){}:_-/|,."),
+            Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage(null).withNewPrefix("2222-1234"), " [](){}:_-/|,.2222-1234 [](){}:_-/|,."),
+            Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage(null).withNewPrefix("2222-1234"), " [](){}:_-/|,.2222-1234 [](){}:_-/|,."),
             Arguments.of(startTemplate.withTicketSystem(OTHER).withCurrentMessage(null).withNewPrefix("5678"), " [](){}:_-/|,.5678 [](){}:_-/|,."),
             Arguments.of(endTemplate.withTicketSystem(OTHER).withCurrentMessage(null).withNewPrefix("5678"), " [](){}:_-/|,.5678 [](){}:_-/|,.")
     );
@@ -117,6 +125,8 @@ class CommitPrefixCheckinHandlerTest {
     return Stream.of(
             Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage("XYXY-837292: XYZ-11 This is my text").withNewPrefix("ABC-1234"), "ABC-1234: XYZ-11 This is my text"),
             Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage("XYZ-11 This is my text: XYXY-837292").withNewPrefix("ABC-1234"), "XYZ-11 This is my text: ABC-1234"),
+            Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage("5678-837292: 55-11 This is my text").withNewPrefix("2222-1234"), "2222-1234: 55-11 This is my text"),
+            Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage("55-11 This is my text: 5678-837292").withNewPrefix("2222-1234"), "55-11 This is my text: 2222-1234"),
             Arguments.of(startTemplate.withTicketSystem(OTHER).withCurrentMessage("1234: 9999 This is my text").withNewPrefix("5678"), "5678: 9999 This is my text"),
             Arguments.of(endTemplate.withTicketSystem(OTHER).withCurrentMessage("9999 This is my text: 1234").withNewPrefix("5678"), "9999 This is my text: 5678")
 
@@ -138,6 +148,8 @@ class CommitPrefixCheckinHandlerTest {
     return Stream.of(
             Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage(null).withNewPrefix("ABC-1234"), "ABC-1234: "),
             Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage(null).withNewPrefix("ABC-1234"), ": ABC-1234"),
+            Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage(null).withNewPrefix("2222-1234"), "2222-1234: "),
+            Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage(null).withNewPrefix("2222-1234"), ": 2222-1234"),
             Arguments.of(startTemplate.withTicketSystem(OTHER).withCurrentMessage(null).withNewPrefix("5678"), "5678: "),
             Arguments.of(endTemplate.withTicketSystem(OTHER).withCurrentMessage(null).withNewPrefix("5678"), ": 5678")
 
@@ -157,6 +169,8 @@ class CommitPrefixCheckinHandlerTest {
     return Stream.of(
             Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage("").withNewPrefix("ABC-1234"), "ABC-1234: "),
             Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage("").withNewPrefix("ABC-1234"), ": ABC-1234"),
+            Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage("").withNewPrefix("2222-1234"), "2222-1234: "),
+            Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage("").withNewPrefix("2222-1234"), ": 2222-1234"),
             Arguments.of(startTemplate.withTicketSystem(OTHER).withCurrentMessage("").withNewPrefix("5678"), "5678: "),
             Arguments.of(endTemplate.withTicketSystem(OTHER).withCurrentMessage("").withNewPrefix("5678"), ": 5678")
 
@@ -176,6 +190,8 @@ class CommitPrefixCheckinHandlerTest {
     return Stream.of(
             Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage("       ").withNewPrefix("ABC-1234"), "ABC-1234: "),
             Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage("       ").withNewPrefix("ABC-1234"), ": ABC-1234"),
+            Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage("       ").withNewPrefix("2222-1234"), "2222-1234: "),
+            Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage("       ").withNewPrefix("2222-1234"), ": 2222-1234"),
             Arguments.of(startTemplate.withTicketSystem(OTHER).withCurrentMessage("       ").withNewPrefix("5678"), "5678: "),
             Arguments.of(endTemplate.withTicketSystem(OTHER).withCurrentMessage("       ").withNewPrefix("5678"), ": 5678")
 
@@ -196,6 +212,8 @@ class CommitPrefixCheckinHandlerTest {
     return Stream.of(
             Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage("   XYXY-837292:  This is a Test     ").withNewPrefix("ABC-1234"), "   ABC-1234:  This is a Test     "),
             Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage("   This is a Test  : XYXY-837292     ").withNewPrefix("ABC-1234"), "   This is a Test  : ABC-1234     "),
+            Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage("   5678-837292:  This is a Test     ").withNewPrefix("2222-1234"), "   2222-1234:  This is a Test     "),
+            Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage("   This is a Test  : 5678-837292     ").withNewPrefix("2222-1234"), "   This is a Test  : 2222-1234     "),
             Arguments.of(startTemplate.withTicketSystem(OTHER).withCurrentMessage("   1111:  This is a Test     ").withNewPrefix("5678"), "   5678:  This is a Test     "),
             Arguments.of(endTemplate.withTicketSystem(OTHER).withCurrentMessage("   This is a Test  : 1111     ").withNewPrefix("5678"), "   This is a Test  : 5678     ")
 
@@ -216,6 +234,8 @@ class CommitPrefixCheckinHandlerTest {
     return Stream.of(
             Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage("   According to issue XYXY-837292: this fix...     ").withNewPrefix("ABC-1234"), "ABC-1234:    According to issue XYXY-837292: this fix...     "),
             Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage("   According to issue : XYXY-837292 this fix...     ").withNewPrefix("ABC-1234"), "   According to issue : XYXY-837292 this fix...     : ABC-1234"),
+            Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage("   According to issue 5678-837292: this fix...     ").withNewPrefix("2222-1234"), "2222-1234:    According to issue 5678-837292: this fix...     "),
+            Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage("   According to issue : 5678-837292 this fix...     ").withNewPrefix("2222-1234"), "   According to issue : 5678-837292 this fix...     : 2222-1234"),
             Arguments.of(startTemplate.withTicketSystem(OTHER).withCurrentMessage("   According to issue 1111: this fix...     ").withNewPrefix("5678"), "5678:    According to issue 1111: this fix...     "),
             Arguments.of(endTemplate.withTicketSystem(OTHER).withCurrentMessage("   According to issue : 1111 this fix...     ").withNewPrefix("5678"), "   According to issue : 1111 this fix...     : 5678")
 
@@ -237,6 +257,8 @@ class CommitPrefixCheckinHandlerTest {
     return Stream.of(
             Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage(null).withNewPrefix("ABC-1234"), "     ABC-1234     "),
             Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage(null).withNewPrefix("ABC-1234"), "     ABC-1234     "),
+            Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage(null).withNewPrefix("2222-1234"), "     2222-1234     "),
+            Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage(null).withNewPrefix("2222-1234"), "     2222-1234     "),
             Arguments.of(startTemplate.withTicketSystem(OTHER).withCurrentMessage(null).withNewPrefix("5678"), "     5678     "),
             Arguments.of(endTemplate.withTicketSystem(OTHER).withCurrentMessage(null).withNewPrefix("5678"), "     5678     ")
 
@@ -257,8 +279,8 @@ class CommitPrefixCheckinHandlerTest {
 
     return Stream.of(
             Arguments.of(startTemplate.withCurrentMessage("Fixed 4 bugs in 3 classes").withNewPrefix("5678"), "5678: Fixed 4 bugs in 3 classes"),
-            Arguments.of(startTemplate.withCurrentMessage("4 bugs in 3 classes fixed").withNewPrefix("5678"), "5678: 4 bugs in 3 classes fixed"),
             Arguments.of(endTemplate.withCurrentMessage("Fixed 4 bugs in 3 classes").withNewPrefix("5678"), "Fixed 4 bugs in 3 classes: 5678"),
+            Arguments.of(startTemplate.withCurrentMessage("4 bugs in 3 classes fixed").withNewPrefix("5678"), "5678: 4 bugs in 3 classes fixed"),
             Arguments.of(endTemplate.withCurrentMessage("4 bugs in 3 classes fixed").withNewPrefix("5678"), "4 bugs in 3 classes fixed: 5678")
     );
   }
@@ -278,8 +300,10 @@ class CommitPrefixCheckinHandlerTest {
 
     return Stream.of(
             Arguments.of(startJiraTemplate.withCurrentMessage("5678: Some fix").withNewPrefix("ABC-1234"), "ABC-1234: 5678: Some fix"),
-            Arguments.of(startOtherTemplate.withCurrentMessage("ABC-1234: Some fix").withNewPrefix("5678"), "5678: ABC-1234: Some fix"),
             Arguments.of(endJiraTemplate.withCurrentMessage("Some fix: 5678").withNewPrefix("ABC-1234"), "Some fix: 5678: ABC-1234"),
+            Arguments.of(startJiraTemplate.withCurrentMessage("5678: Some fix").withNewPrefix("1111-1234"), "1111-1234: 5678: Some fix"),
+            Arguments.of(endJiraTemplate.withCurrentMessage("Some fix: 5678").withNewPrefix("1111-1234"), "Some fix: 5678: 1111-1234"),
+            Arguments.of(startOtherTemplate.withCurrentMessage("ABC-1234: Some fix").withNewPrefix("5678"), "5678: ABC-1234: Some fix"),
             Arguments.of(endOtherTemplate.withCurrentMessage("Some fix: ABC-1234").withNewPrefix("5678"), "Some fix: ABC-1234: 5678")
     );
   }
@@ -290,132 +314,172 @@ class CommitPrefixCheckinHandlerTest {
     tester.updatePrefix().doAssertion(expectedMessage);
   }
 
+  static Stream<Arguments> getTicketName_withoutBranchType_returnsTicket() {
+    TicketNameTester jiraTicketTemplate = new TicketNameTester().withTicketSystem(JIRA);
+    TicketNameTester otherTicketTemplate = new TicketNameTester().withTicketSystem(OTHER);
 
+    return Stream.of(
+            Arguments.of(jiraTicketTemplate.withBranchName("ABC-1234-app-not-working"), "ABC-1234"),
+            Arguments.of(jiraTicketTemplate.withBranchName("1111-1234-app-not-working"), "1111-1234"),
+            Arguments.of(otherTicketTemplate.withBranchName("1234-app-not-working"), "1234")
 
-
-  @Test
-  public void getTicketName_withoutBranchType_retunsJiraTicket() {
-    new TicketNameTester()
-        .withTicketSystem(JIRA)
-        .getTicketFromBranch("ABC-1234-app-not-working")
-        .shouldHaveTicketName("ABC-1234");
+    );
   }
 
-  @Test
-  public void getTicketName_reproduce() {
-    new TicketNameTester()
-        .withTicketSystem(JIRA)
-        .getTicketFromBranch("feature/DATA-4214-ab-CEP3.0-Transition-polling")
-        .shouldHaveTicketName("DATA-4214");
+
+  @ParameterizedTest
+  @MethodSource
+  public void getTicketName_withoutBranchType_returnsTicket(TicketNameTester tester, String expectedMessage) {
+    tester.readTicket().doAssertion(expectedMessage);
   }
 
-  @Test
-  public void getTicketName_featureBranchType_retunsJiraTicket() {
-    new TicketNameTester()
-        .withTicketSystem(JIRA)
-        .getTicketFromBranch("feature/ABC-1234-app-not-working")
-        .shouldHaveTicketName("ABC-1234");
+
+
+  static Stream<Arguments> getTicketName_reproduce() {
+    TicketNameTester jiraTicketTemplate = new TicketNameTester().withTicketSystem(JIRA);
+    TicketNameTester otherTicketTemplate = new TicketNameTester().withTicketSystem(OTHER);
+
+    return Stream.of(
+            Arguments.of(jiraTicketTemplate.withBranchName("feature/DATA-4214-ab-CEP3.0-Transition-polling"), "DATA-4214"),
+            Arguments.of(jiraTicketTemplate.withBranchName("feature/1111-4214-ab-CEP3.0-Transition-polling"), "1111-4214"),
+            Arguments.of(otherTicketTemplate.withBranchName("feature/1111-ab-CEP3.0-Transition-polling"), "1111")
+
+    );
   }
 
-  @Test
-  public void getTicketName_releaseBranchType_retunsJiraTicket() {
-    new TicketNameTester()
-        .withTicketSystem(JIRA)
-        .getTicketFromBranch("release/ABC-1234-app-not-working")
-        .shouldHaveTicketName("ABC-1234");
+  @ParameterizedTest
+  @MethodSource
+  public void getTicketName_reproduce(TicketNameTester tester, String expectedMessage) {
+    tester.readTicket().doAssertion(expectedMessage);
   }
 
-  @Test
-  public void getTicketName_bugfixBranchType_retunsJiraTicket() {
-    new TicketNameTester()
-        .withTicketSystem(JIRA)
-        .getTicketFromBranch("bugfix/ABC-1234-app-not-working")
-        .shouldHaveTicketName("ABC-1234");
+  static Stream<Arguments> getTicketName_featureBranchType_returnsTicket() {
+    TicketNameTester jiraTicketTemplate = new TicketNameTester().withTicketSystem(JIRA);
+    TicketNameTester otherTicketTemplate = new TicketNameTester().withTicketSystem(OTHER);
+
+    return Stream.of(
+            Arguments.of(jiraTicketTemplate.withBranchName("feature/ABC-1234-app-not-working"), "ABC-1234"),
+            Arguments.of(jiraTicketTemplate.withBranchName("feature/1111-1234-app-not-working"), "1111-1234"),
+            Arguments.of(otherTicketTemplate.withBranchName("feature/1111-app-not-working"), "1111")
+
+    );
   }
 
-  @Test
-  public void getTicketName_someOtherType_retunsJiraTicket() {
-    new TicketNameTester()
-        .withTicketSystem(JIRA)
-        .getTicketFromBranch("someOtherType/ABC-1234-app-not-working")
-        .shouldHaveTicketName("ABC-1234");
+  @ParameterizedTest
+  @MethodSource
+  public void getTicketName_featureBranchType_returnsTicket(TicketNameTester tester, String expectedMessage) {
+    tester.readTicket().doAssertion(expectedMessage);
   }
 
-  @Test
-  public void getTicketName_emptyType_retunsJiraTicket() {
-    new TicketNameTester()
-        .withTicketSystem(JIRA)
-        .getTicketFromBranch("/ABC-1234-app-not-working")
-        .shouldHaveTicketName("ABC-1234");
+  static Stream<Arguments> getTicketName_releaseBranchType_returnsTicket() {
+    TicketNameTester jiraTicketTemplate = new TicketNameTester().withTicketSystem(JIRA);
+    TicketNameTester otherTicketTemplate = new TicketNameTester().withTicketSystem(OTHER);
+
+    return Stream.of(
+            Arguments.of(jiraTicketTemplate.withBranchName("release/ABC-1234-app-not-working"), "ABC-1234"),
+            Arguments.of(jiraTicketTemplate.withBranchName("release/1111-1234-app-not-working"), "1111-1234"),
+            Arguments.of(otherTicketTemplate.withBranchName("release/1111-app-not-working"), "1111")
+
+    );
   }
 
-  @Test
-  public void getTicketName_emptySuffix_retunsJiraTicket() {
-    new TicketNameTester()
-        .withTicketSystem(JIRA)
-        .getTicketFromBranch("feature/ABC-1234")
-        .shouldHaveTicketName("ABC-1234");
+  @ParameterizedTest
+  @MethodSource
+  public void getTicketName_releaseBranchType_returnsTicket(TicketNameTester tester, String expectedMessage) {
+    tester.readTicket().doAssertion(expectedMessage);
   }
 
-  @Test
-  void getTicketName_branchNameStartingWithDigit_retunsJiraTicket() {
-    new TicketNameTester()
-        .withTicketSystem(JIRA)
-        .getTicketFromBranch("ABC-1234-3-small-fixes")
-        .shouldHaveTicketName("ABC-1234");
+  static Stream<Arguments> getTicketName_bugfixBranchType_returnsTicket() {
+    TicketNameTester jiraTicketTemplate = new TicketNameTester().withTicketSystem(JIRA);
+    TicketNameTester otherTicketTemplate = new TicketNameTester().withTicketSystem(OTHER);
+
+    return Stream.of(
+            Arguments.of(jiraTicketTemplate.withBranchName("bugfix/ABC-1234-app-not-working"), "ABC-1234"),
+            Arguments.of(jiraTicketTemplate.withBranchName("bugfix/1111-1234-app-not-working"), "1111-1234"),
+            Arguments.of(otherTicketTemplate.withBranchName("bugfix/1111-app-not-working"), "1111")
+
+    );
   }
 
-  @Test
-  void getTicketName_allDigitProjectKeyAndBranchNameStartingWithDigit_retunsJiraTicket() {
-    new TicketNameTester()
-        .withTicketSystem(JIRA)
-        .getTicketFromBranch("123-1234-3-small-fixes")
-        .shouldHaveTicketName("123-1234");
+  @ParameterizedTest
+  @MethodSource
+  public void getTicketName_bugfixBranchType_returnsTicket(TicketNameTester tester, String expectedMessage) {
+    tester.readTicket().doAssertion(expectedMessage);
   }
 
-  @Test
-  void getTicketName_withoutBranchType_returnsAzureBoardsWorkItem() {
-    new TicketNameTester()
-        .withTicketSystem(OTHER)
-        .getTicketFromBranch("1234-app-not-working")
-        .shouldHaveTicketName("1234");
+  static Stream<Arguments> getTicketName_someOtherBranchType_returnsTicket() {
+    TicketNameTester jiraTicketTemplate = new TicketNameTester().withTicketSystem(JIRA);
+    TicketNameTester otherTicketTemplate = new TicketNameTester().withTicketSystem(OTHER);
+
+    return Stream.of(
+            Arguments.of(jiraTicketTemplate.withBranchName("someOtherType/ABC-1234-app-not-working"), "ABC-1234"),
+            Arguments.of(jiraTicketTemplate.withBranchName("someOtherType/1111-1234-app-not-working"), "1111-1234"),
+            Arguments.of(otherTicketTemplate.withBranchName("someOtherType/1111-app-not-working"), "1111")
+
+    );
   }
 
-  @Test
-  void getTicketName_featureBranchType_returnsAzureBoardsWorkItem() {
-    new TicketNameTester()
-        .withTicketSystem(OTHER)
-        .getTicketFromBranch("feature/1234-app-not-working")
-        .shouldHaveTicketName("1234");
+  @ParameterizedTest
+  @MethodSource
+  public void getTicketName_someOtherBranchType_returnsTicket(TicketNameTester tester, String expectedMessage) {
+    tester.readTicket().doAssertion(expectedMessage);
   }
 
-  @Test
-  void getTicketName_emptyType_returnsAzureBoardsWorkItem() {
-    new TicketNameTester()
-        .withTicketSystem(OTHER)
-        .getTicketFromBranch("/1234-app-not-working")
-        .shouldHaveTicketName("1234");
+  static Stream<Arguments> getTicketName_emptyType_returnsTicket() {
+    TicketNameTester jiraTicketTemplate = new TicketNameTester().withTicketSystem(JIRA);
+    TicketNameTester otherTicketTemplate = new TicketNameTester().withTicketSystem(OTHER);
+
+    return Stream.of(
+            Arguments.of(jiraTicketTemplate.withBranchName("/ABC-1234-app-not-working"), "ABC-1234"),
+            Arguments.of(jiraTicketTemplate.withBranchName("/1111-1234-app-not-working"), "1111-1234"),
+            Arguments.of(otherTicketTemplate.withBranchName("/1111-app-not-working"), "1111")
+
+    );
   }
 
-  @Test
-  void getTicketName_emptySuffix_returnsAzureBoardsWorkItem() {
-    new TicketNameTester()
-        .withTicketSystem(OTHER)
-        .getTicketFromBranch("feature/1234")
-        .shouldHaveTicketName("1234");
+  @ParameterizedTest
+  @MethodSource
+  public void getTicketName_emptyType_returnsTicket(TicketNameTester tester, String expectedMessage) {
+    tester.readTicket().doAssertion(expectedMessage);
   }
 
-  @Test
-  void getTicketName_branchNameStartingWithDigit_doesNotReturnAzureBoardsWorkItem() {
-    new TicketNameTester()
-        .withTicketSystem(JIRA)
-        .getTicketFromBranch("1234-3-small-fixes")
-        .shouldHaveTicketName("1234-3");
-    new TicketNameTester()
-        .withTicketSystem(OTHER)
-        .getTicketFromBranch("1234-3-small-fixes")
-        .shouldHaveTicketName("1234");
+  static Stream<Arguments> getTicketName_emptySuffix_returnsTicket() {
+    TicketNameTester jiraTicketTemplate = new TicketNameTester().withTicketSystem(JIRA);
+    TicketNameTester otherTicketTemplate = new TicketNameTester().withTicketSystem(OTHER);
+
+    return Stream.of(
+            Arguments.of(jiraTicketTemplate.withBranchName("feature/ABC-1234"), "ABC-1234"),
+            Arguments.of(jiraTicketTemplate.withBranchName("feature/1111-1234"), "1111-1234"),
+            Arguments.of(otherTicketTemplate.withBranchName("feature/1111"), "1111")
+
+    );
   }
+
+  @ParameterizedTest
+  @MethodSource
+  public void getTicketName_emptySuffix_returnsTicket(TicketNameTester tester, String expectedMessage) {
+    tester.readTicket().doAssertion(expectedMessage);
+  }
+
+  static Stream<Arguments> getTicketName_branchNameStartingWithDigit_returnsTicket() {
+    TicketNameTester jiraTicketTemplate = new TicketNameTester().withTicketSystem(JIRA);
+    TicketNameTester otherTicketTemplate = new TicketNameTester().withTicketSystem(OTHER);
+
+    return Stream.of(
+            Arguments.of(jiraTicketTemplate.withBranchName("ABC-1234-3-small-fixes"), "ABC-1234"),
+            Arguments.of(jiraTicketTemplate.withBranchName("1111-1234-3-small-fixes"), "1111-1234"),
+            Arguments.of(otherTicketTemplate.withBranchName("1111-3-small-fixes"), "1111")
+
+    );
+  }
+
+  @ParameterizedTest
+  @MethodSource
+  public void getTicketName_branchNameStartingWithDigit_returnsTicket(TicketNameTester tester, String expectedMessage) {
+    tester.readTicket().doAssertion(expectedMessage);
+  }
+
+
 
   @With
   @AllArgsConstructor
@@ -454,30 +518,32 @@ class CommitPrefixCheckinHandlerTest {
   }
 
 
+  @With
+  @AllArgsConstructor
+  @NoArgsConstructor
   static class TicketNameTester {
 
     private TicketSystem ticketSystem;
+    private String branchName;
 
-    TicketNameTester withTicketSystem(TicketSystem ticketSystem) {
-      this.ticketSystem = ticketSystem;
-      return this;
+    TicketNameAsserter readTicket() {
+      Optional<String> ticket =
+              CommitPrefixCheckinHandler.getTicket(ticketSystem, branchName);
+      return new TicketNameAsserter(ticket);
     }
 
-    TicketNameAsserter getTicketFromBranch(String branchName) {
-      Optional<String> ticket = CommitPrefixCheckinHandler.getTicket(ticketSystem, branchName);
-      return new TicketNameAsserter(ticket);
+    @Override
+    public String toString() {
+      return String.format("%s, %s", ticketSystem.toString(), branchName);
     }
   }
 
+  @RequiredArgsConstructor
   static class TicketNameAsserter {
 
     private final Optional<String> actualTicketName;
 
-    TicketNameAsserter(Optional<String> actualTicketName) {
-      this.actualTicketName = actualTicketName;
-    }
-
-    void shouldHaveTicketName(String expectedTicketName) {
+    void doAssertion(String expectedTicketName) {
       assertThat(actualTicketName.isPresent(), is(true));
       assertThat(actualTicketName.get(), is(expectedTicketName));
     }
