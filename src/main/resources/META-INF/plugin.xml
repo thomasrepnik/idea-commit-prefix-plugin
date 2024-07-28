@@ -18,7 +18,7 @@
 
     <description><![CDATA[
         <p>
-          Automatically set the jira issue key (of the current branch name) as prefix for the commit message<br>
+          Automatically set the issue key (of the current branch name) as prefix for the commit message<br>
           <ul>
             <li>Choose your own delimiter between the issue key and commit message</li>
             <li>Wrap the issue key if necessary</li>
