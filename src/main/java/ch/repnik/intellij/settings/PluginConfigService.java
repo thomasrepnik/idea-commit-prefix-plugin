@@ -19,26 +19,28 @@ public class PluginConfigService implements PersistentStateComponent<PluginConfi
 
     @Override
     public Configuration getState() {
-        System.out.println("getState");
-        System.out.println(configuration.getWrapLeft());
-        System.out.println(configuration.getWrapRight());
         return configuration;
     }
 
     @Override
     public void loadState(@NotNull Configuration configuration) {
-        System.out.println("loadState");
-        System.out.println(configuration.getWrapLeft());
-        System.out.println(configuration.getWrapRight());
         this.configuration = configuration;
     }
 
     public static class Configuration implements Serializable {
 
+        private TicketSystem ticketSystem = TicketSystem.JIRA;
         private String wrapLeft = "";
         private String wrapRight = ": ";
-
         private Position issueKeyPosition = Position.START;
+
+        public TicketSystem getTicketSystem() {
+            return ticketSystem;
+        }
+
+        public void setTicketSystem(TicketSystem ticketSystem) {
+            this.ticketSystem = ticketSystem;
+        }
 
         public String getWrapLeft() {
             return wrapLeft;
