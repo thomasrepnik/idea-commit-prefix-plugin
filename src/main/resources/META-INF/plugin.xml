@@ -24,6 +24,7 @@
             <li>Wrap the issue key if necessary</li>
           </ul>
         </p>
+        <br/><br/>
         <p>
             <strong>Important:</strong> This plugin only works with branches named as follows
             <ul>
