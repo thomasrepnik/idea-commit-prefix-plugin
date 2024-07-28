@@ -104,7 +104,6 @@ public class PluginSettingsForm extends BaseConfigurable implements SearchableCo
         if (mainPanel != null) {
             if (isModified()) {
                 validate();
-                System.out.println("Config applied");
                 PluginConfigService.Configuration state = project.getService(PluginConfigService.class).getState();
                 state.setTicketSystem(getTicketSystem());
                 state.setWrapRight(getWrapRight());

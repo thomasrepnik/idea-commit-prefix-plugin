@@ -19,17 +19,11 @@ public class PluginConfigService implements PersistentStateComponent<PluginConfi
 
     @Override
     public Configuration getState() {
-        System.out.println("getState");
-        System.out.println(configuration.getWrapLeft());
-        System.out.println(configuration.getWrapRight());
         return configuration;
     }
 
     @Override
     public void loadState(@NotNull Configuration configuration) {
-        System.out.println("loadState");
-        System.out.println(configuration.getWrapLeft());
-        System.out.println(configuration.getWrapRight());
         this.configuration = configuration;
     }
 
