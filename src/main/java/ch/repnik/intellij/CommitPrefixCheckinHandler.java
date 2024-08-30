@@ -33,9 +33,9 @@ public class CommitPrefixCheckinHandler extends CheckinHandler implements GitRep
   private final Logger log = Logger.getInstance(getClass());
   private final CheckinProjectPanel panel;
   private static final Pattern jiraBranchNamePattern =
-      Pattern.compile("(?<=\\/)*([A-Z0-9]+-[0-9]+)");
+      Pattern.compile("(?<=\\/)*([A-Za-z0-9]+-[0-9]+)");
   private static final Pattern otherBranchNamePattern = Pattern.compile("(?<=\\/)*(\\d+)");
-  private static final Pattern jiraPrefixPattern = Pattern.compile("[A-Z0-9]+-[0-9]+");
+  private static final Pattern jiraPrefixPattern = Pattern.compile("[A-Za-z0-9]+-[0-9]+");
   private static final Pattern otherPrefixPattern = Pattern.compile("\\d+");
 
   public CommitPrefixCheckinHandler(CheckinProjectPanel panel) {

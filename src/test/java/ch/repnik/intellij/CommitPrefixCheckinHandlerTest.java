@@ -25,9 +25,11 @@ class CommitPrefixCheckinHandlerTest {
     UpdatePrefixTester endTemplate = new UpdatePrefixTester().withWrapLeft(": ").withWrapRight("").withIssueKeyPosition(Position.END);
     return Stream.of(
             Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage("Testli").withNewPrefix("ABC-1234"), "Testli: ABC-1234"),
+            Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage("Testli").withNewPrefix("abc-1234"), "Testli: abc-1234"),
             Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage("Testli").withNewPrefix("123-4567"), "Testli: 123-4567"),
             Arguments.of(endTemplate.withTicketSystem(OTHER).withCurrentMessage("Testli").withNewPrefix("5678"), "Testli: 5678"),
             Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage("Testli").withNewPrefix("ABC-1234"), "ABC-1234: Testli"),
+            Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage("Testli").withNewPrefix("abc-1234"), "abc-1234: Testli"),
             Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage("Testli").withNewPrefix("123-4567"), "123-4567: Testli"),
             Arguments.of(startTemplate.withTicketSystem(OTHER).withCurrentMessage("Testli").withNewPrefix("5678"), "5678: Testli")
     );
@@ -44,7 +46,9 @@ class CommitPrefixCheckinHandlerTest {
     UpdatePrefixTester endTemplate = new UpdatePrefixTester().withWrapLeft(": ").withWrapRight("").withIssueKeyPosition(Position.END);
     return Stream.of(
             Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage("XYXY-837292: This is my text").withNewPrefix("ABC-1234"), "ABC-1234: This is my text"),
+            Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage("xyxy-837292: This is my text").withNewPrefix("abc-1234"), "abc-1234: This is my text"),
             Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage("This is my text: XYXY-837292").withNewPrefix("ABC-1234"), "This is my text: ABC-1234"),
+            Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage("This is my text: xyxy-837292").withNewPrefix("abc-1234"), "This is my text: abc-1234"),
             Arguments.of(startTemplate.withTicketSystem(OTHER).withCurrentMessage("837292: This is my text").withNewPrefix("5678"), "5678: This is my text"),
             Arguments.of(endTemplate.withTicketSystem(OTHER).withCurrentMessage("This is my text: 837292").withNewPrefix("5678"), "This is my text: 5678"),
             Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage("5678-837292: This is my text").withNewPrefix("2222-1234"), "2222-1234: This is my text"),
@@ -64,7 +68,9 @@ class CommitPrefixCheckinHandlerTest {
     UpdatePrefixTester endTemplate = new UpdatePrefixTester().withWrapLeft(": ").withWrapRight("").withIssueKeyPosition(Position.END);
     return Stream.of(
             Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage("XYXY-837292:").withNewPrefix("ABC-1234"), "ABC-1234: "),
+            Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage("xyxy-837292:").withNewPrefix("abc-1234"), "abc-1234: "),
             Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage(": XYXY-837292").withNewPrefix("ABC-1234"), ": ABC-1234"),
+            Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage(": xyxy-837292").withNewPrefix("abc-1234"), ": abc-1234"),
             Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage("5678-837292:").withNewPrefix("2222-1234"), "2222-1234: "),
             Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage(": 5678-837292").withNewPrefix("2222-1234"), ": 2222-1234"),
             Arguments.of(startTemplate.withTicketSystem(OTHER).withCurrentMessage("837292: ").withNewPrefix("5678"), "5678: "),
@@ -84,7 +90,9 @@ class CommitPrefixCheckinHandlerTest {
 
     return Stream.of(
             Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage("XYXY-837292: This is my text").withNewPrefix("ABC-1234"), "ABC-1234 | XYXY-837292: This is my text"),
+            Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage("xyxy-837292: This is my text").withNewPrefix("abc-1234"), "abc-1234 | xyxy-837292: This is my text"),
             Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage("This is my text: XYXY-837292").withNewPrefix("ABC-1234"), "This is my text: XYXY-837292 | ABC-1234"),
+            Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage("This is my text: xyxy-837292").withNewPrefix("abc-1234"), "This is my text: xyxy-837292 | abc-1234"),
             Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage("5678-837292: This is my text").withNewPrefix("2222-1234"), "2222-1234 | 5678-837292: This is my text"),
             Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage("This is my text: 5678-837292").withNewPrefix("2222-1234"), "This is my text: 5678-837292 | 2222-1234"),
             Arguments.of(startTemplate.withTicketSystem(OTHER).withCurrentMessage("837292: This is my text").withNewPrefix("5678"), "5678 | 837292: This is my text"),
@@ -104,7 +112,9 @@ class CommitPrefixCheckinHandlerTest {
 
     return Stream.of(
             Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage(null).withNewPrefix("ABC-1234"), " [](){}:_-/|,.ABC-1234 [](){}:_-/|,."),
+            Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage(null).withNewPrefix("abc-1234"), " [](){}:_-/|,.abc-1234 [](){}:_-/|,."),
             Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage(null).withNewPrefix("ABC-1234"), " [](){}:_-/|,.ABC-1234 [](){}:_-/|,."),
+            Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage(null).withNewPrefix("abc-1234"), " [](){}:_-/|,.abc-1234 [](){}:_-/|,."),
             Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage(null).withNewPrefix("2222-1234"), " [](){}:_-/|,.2222-1234 [](){}:_-/|,."),
             Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage(null).withNewPrefix("2222-1234"), " [](){}:_-/|,.2222-1234 [](){}:_-/|,."),
             Arguments.of(startTemplate.withTicketSystem(OTHER).withCurrentMessage(null).withNewPrefix("5678"), " [](){}:_-/|,.5678 [](){}:_-/|,."),
@@ -124,7 +134,9 @@ class CommitPrefixCheckinHandlerTest {
 
     return Stream.of(
             Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage("XYXY-837292: XYZ-11 This is my text").withNewPrefix("ABC-1234"), "ABC-1234: XYZ-11 This is my text"),
+            Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage("xyxy-837292: xyz-11 This is my text").withNewPrefix("abc-1234"), "abc-1234: xyz-11 This is my text"),
             Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage("XYZ-11 This is my text: XYXY-837292").withNewPrefix("ABC-1234"), "XYZ-11 This is my text: ABC-1234"),
+            Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage("xyz-11 This is my text: xyxy-837292").withNewPrefix("abc-1234"), "xyz-11 This is my text: abc-1234"),
             Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage("5678-837292: 55-11 This is my text").withNewPrefix("2222-1234"), "2222-1234: 55-11 This is my text"),
             Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage("55-11 This is my text: 5678-837292").withNewPrefix("2222-1234"), "55-11 This is my text: 2222-1234"),
             Arguments.of(startTemplate.withTicketSystem(OTHER).withCurrentMessage("1234: 9999 This is my text").withNewPrefix("5678"), "5678: 9999 This is my text"),
@@ -147,7 +159,9 @@ class CommitPrefixCheckinHandlerTest {
 
     return Stream.of(
             Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage(null).withNewPrefix("ABC-1234"), "ABC-1234: "),
+            Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage(null).withNewPrefix("abc-1234"), "abc-1234: "),
             Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage(null).withNewPrefix("ABC-1234"), ": ABC-1234"),
+            Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage(null).withNewPrefix("abc-1234"), ": abc-1234"),
             Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage(null).withNewPrefix("2222-1234"), "2222-1234: "),
             Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage(null).withNewPrefix("2222-1234"), ": 2222-1234"),
             Arguments.of(startTemplate.withTicketSystem(OTHER).withCurrentMessage(null).withNewPrefix("5678"), "5678: "),
@@ -168,7 +182,9 @@ class CommitPrefixCheckinHandlerTest {
 
     return Stream.of(
             Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage("").withNewPrefix("ABC-1234"), "ABC-1234: "),
+            Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage("").withNewPrefix("abc-1234"), "abc-1234: "),
             Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage("").withNewPrefix("ABC-1234"), ": ABC-1234"),
+            Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage("").withNewPrefix("abc-1234"), ": abc-1234"),
             Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage("").withNewPrefix("2222-1234"), "2222-1234: "),
             Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage("").withNewPrefix("2222-1234"), ": 2222-1234"),
             Arguments.of(startTemplate.withTicketSystem(OTHER).withCurrentMessage("").withNewPrefix("5678"), "5678: "),
@@ -189,7 +205,9 @@ class CommitPrefixCheckinHandlerTest {
 
     return Stream.of(
             Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage("       ").withNewPrefix("ABC-1234"), "ABC-1234: "),
+            Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage("       ").withNewPrefix("abc-1234"), "abc-1234: "),
             Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage("       ").withNewPrefix("ABC-1234"), ": ABC-1234"),
+            Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage("       ").withNewPrefix("abc-1234"), ": abc-1234"),
             Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage("       ").withNewPrefix("2222-1234"), "2222-1234: "),
             Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage("       ").withNewPrefix("2222-1234"), ": 2222-1234"),
             Arguments.of(startTemplate.withTicketSystem(OTHER).withCurrentMessage("       ").withNewPrefix("5678"), "5678: "),
@@ -211,7 +229,9 @@ class CommitPrefixCheckinHandlerTest {
 
     return Stream.of(
             Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage("   XYXY-837292:  This is a Test     ").withNewPrefix("ABC-1234"), "   ABC-1234:  This is a Test     "),
+            Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage("   xyxy-837292:  This is a Test     ").withNewPrefix("abc-1234"), "   abc-1234:  This is a Test     "),
             Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage("   This is a Test  : XYXY-837292     ").withNewPrefix("ABC-1234"), "   This is a Test  : ABC-1234     "),
+            Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage("   This is a Test  : xyxy-837292     ").withNewPrefix("abc-1234"), "   This is a Test  : abc-1234     "),
             Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage("   5678-837292:  This is a Test     ").withNewPrefix("2222-1234"), "   2222-1234:  This is a Test     "),
             Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage("   This is a Test  : 5678-837292     ").withNewPrefix("2222-1234"), "   This is a Test  : 2222-1234     "),
             Arguments.of(startTemplate.withTicketSystem(OTHER).withCurrentMessage("   1111:  This is a Test     ").withNewPrefix("5678"), "   5678:  This is a Test     "),
@@ -233,7 +253,9 @@ class CommitPrefixCheckinHandlerTest {
 
     return Stream.of(
             Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage("   According to issue XYXY-837292: this fix...     ").withNewPrefix("ABC-1234"), "ABC-1234:    According to issue XYXY-837292: this fix...     "),
+            Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage("   According to issue xyxy-837292: this fix...     ").withNewPrefix("abc-1234"), "abc-1234:    According to issue xyxy-837292: this fix...     "),
             Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage("   According to issue : XYXY-837292 this fix...     ").withNewPrefix("ABC-1234"), "   According to issue : XYXY-837292 this fix...     : ABC-1234"),
+            Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage("   According to issue : xyxy-837292 this fix...     ").withNewPrefix("abc-1234"), "   According to issue : xyxy-837292 this fix...     : abc-1234"),
             Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage("   According to issue 5678-837292: this fix...     ").withNewPrefix("2222-1234"), "2222-1234:    According to issue 5678-837292: this fix...     "),
             Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage("   According to issue : 5678-837292 this fix...     ").withNewPrefix("2222-1234"), "   According to issue : 5678-837292 this fix...     : 2222-1234"),
             Arguments.of(startTemplate.withTicketSystem(OTHER).withCurrentMessage("   According to issue 1111: this fix...     ").withNewPrefix("5678"), "5678:    According to issue 1111: this fix...     "),
@@ -256,7 +278,9 @@ class CommitPrefixCheckinHandlerTest {
 
     return Stream.of(
             Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage(null).withNewPrefix("ABC-1234"), "     ABC-1234     "),
+            Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage(null).withNewPrefix("abc-1234"), "     abc-1234     "),
             Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage(null).withNewPrefix("ABC-1234"), "     ABC-1234     "),
+            Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage(null).withNewPrefix("abc-1234"), "     abc-1234     "),
             Arguments.of(startTemplate.withTicketSystem(JIRA).withCurrentMessage(null).withNewPrefix("2222-1234"), "     2222-1234     "),
             Arguments.of(endTemplate.withTicketSystem(JIRA).withCurrentMessage(null).withNewPrefix("2222-1234"), "     2222-1234     "),
             Arguments.of(startTemplate.withTicketSystem(OTHER).withCurrentMessage(null).withNewPrefix("5678"), "     5678     "),

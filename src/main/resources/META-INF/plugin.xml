@@ -1,17 +1,14 @@
 <idea-plugin>
     <id>commit-prefix-plugin</id>
     <name>Git Auto Prefix</name>
-    <version>1.4.0</version>
+    <version>1.4.1</version>
     <vendor url="https://github.com/thomasrepnik/idea-commit-prefix-plugin">Thomas Repnik</vendor>
 
     <change-notes><![CDATA[
         <p>
           <ul>
-            <li>Added support for numeric Jira project keys</li>
-            <li>Added support for other ticketing systems that use only numeric keys</li>
+            <li>Added support for lowercase project keys</li>
           </ul>
-          <br/>
-          Credits to <a href="https://github.com/OrtecJohnB">OrtecJohnB</a> for contributing!
         </p>
 
     ]]></change-notes>
