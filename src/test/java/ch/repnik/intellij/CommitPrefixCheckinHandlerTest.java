@@ -504,6 +504,45 @@ class CommitPrefixCheckinHandlerTest {
   }
 
 
+  static Stream<Arguments> calculateNewCommitMessage_messageUnchanged_returnsEmpty() {
+    CalculateMessageTester startTemplate = new CalculateMessageTester().withWrapLeft("").withWrapRight(": ").withIssueKeyPosition(Position.START);
+    CalculateMessageTester endTemplate = new CalculateMessageTester().withWrapLeft(": ").withWrapRight("").withIssueKeyPosition(Position.END);
+
+    return Stream.of(
+            Arguments.of(startTemplate.withTicketSystem(JIRA).withBranchName("main").withCurrentMessage("Some message")),
+            Arguments.of(startTemplate.withTicketSystem(JIRA).withBranchName("develop").withCurrentMessage("")),
+            Arguments.of(startTemplate.withTicketSystem(JIRA).withBranchName("feature/ABC-1234-app-not-working").withCurrentMessage("ABC-1234: This is my text")),
+            Arguments.of(startTemplate.withTicketSystem(JIRA).withBranchName("feature/ABC-1234-app-not-working").withCurrentMessage("ABC-1234:")),
+            Arguments.of(endTemplate.withTicketSystem(JIRA).withBranchName("feature/ABC-1234-app-not-working").withCurrentMessage("This is my text: ABC-1234")),
+            Arguments.of(startTemplate.withTicketSystem(OTHER).withBranchName("feature/5678-app-not-working").withCurrentMessage("5678: This is my text"))
+    );
+  }
+
+  @ParameterizedTest
+  @MethodSource
+  public void calculateNewCommitMessage_messageUnchanged_returnsEmpty(CalculateMessageTester tester) {
+    tester.calculate().assertEmpty();
+  }
+
+  static Stream<Arguments> calculateNewCommitMessage_messageChanged_returnsNewMessage() {
+    CalculateMessageTester startTemplate = new CalculateMessageTester().withWrapLeft("").withWrapRight(": ").withIssueKeyPosition(Position.START);
+    CalculateMessageTester endTemplate = new CalculateMessageTester().withWrapLeft(": ").withWrapRight("").withIssueKeyPosition(Position.END);
+
+    return Stream.of(
+            Arguments.of(startTemplate.withTicketSystem(JIRA).withBranchName("feature/ABC-1234-app-not-working").withCurrentMessage(null), "ABC-1234: "),
+            Arguments.of(startTemplate.withTicketSystem(JIRA).withBranchName("feature/ABC-1234-app-not-working").withCurrentMessage("XYXY-837292: This is my text"), "ABC-1234: This is my text"),
+            Arguments.of(endTemplate.withTicketSystem(JIRA).withBranchName("feature/ABC-1234-app-not-working").withCurrentMessage("This is my text: XYXY-837292"), "This is my text: ABC-1234"),
+            Arguments.of(startTemplate.withTicketSystem(OTHER).withBranchName("feature/5678-app-not-working").withCurrentMessage("1111: This is my text"), "5678: This is my text")
+    );
+  }
+
+  @ParameterizedTest
+  @MethodSource
+  public void calculateNewCommitMessage_messageChanged_returnsNewMessage(CalculateMessageTester tester, String expectedMessage) {
+    tester.calculate().assertMessage(expectedMessage);
+  }
+
+
 
   @With
   @AllArgsConstructor
@@ -570,6 +609,47 @@ class CommitPrefixCheckinHandlerTest {
     void doAssertion(String expectedTicketName) {
       assertThat(actualTicketName.isPresent(), is(true));
       assertThat(actualTicketName.get(), is(expectedTicketName));
+    }
+  }
+
+
+  @With
+  @AllArgsConstructor
+  @NoArgsConstructor
+  static class CalculateMessageTester {
+
+    private TicketSystem ticketSystem;
+    private String branchName;
+    private String currentMessage;
+    private String wrapLeft;
+    private String wrapRight;
+    private Position issueKeyPosition;
+
+    CalculateMessageAsserter calculate() {
+      Optional<String> newMessage =
+              CommitPrefixCheckinHandler.calculateNewCommitMessage(
+                      ticketSystem, branchName, currentMessage, wrapLeft, wrapRight, issueKeyPosition);
+      return new CalculateMessageAsserter(newMessage);
+    }
+
+    @Override
+    public String toString() {
+      return String.format("%s, %s, %s", ticketSystem.toString(), branchName, currentMessage);
+    }
+  }
+
+  @RequiredArgsConstructor
+  static class CalculateMessageAsserter {
+
+    private final Optional<String> actualMessage;
+
+    void assertEmpty() {
+      assertThat(actualMessage.isPresent(), is(false));
+    }
+
+    void assertMessage(String expectedMessage) {
+      assertThat(actualMessage.isPresent(), is(true));
+      assertThat(actualMessage.get(), is(expectedMessage));
     }
   }
 }
