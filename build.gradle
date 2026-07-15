@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'org.jetbrains.intellij.platform' version '2.11.0'
+    id 'org.jetbrains.intellij.platform' version '2.18.1'
 }
 
 group 'ch.repnik'
@@ -21,20 +21,19 @@ dependencies {
         pluginVerifier()
     }
 
-    testImplementation 'org.hamcrest:hamcrest:2.2'
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.3'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.3'
-    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.10.3'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.10.3'
-    testCompileOnly 'org.projectlombok:lombok:1.18.34'
-    testAnnotationProcessor 'org.projectlombok:lombok:1.18.34'
+    testImplementation 'org.hamcrest:hamcrest:3.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:6.1.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:6.1.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:6.1.2'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:6.1.2'
+    testCompileOnly 'org.projectlombok:lombok:1.18.46'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.46'
 
 }
 
 java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
-    }
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }
 
 test {
