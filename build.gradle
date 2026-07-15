@@ -1,16 +1,26 @@
 plugins {
     id 'java'
-    id 'org.jetbrains.intellij' version '1.16.0'
+    id 'org.jetbrains.intellij.platform' version '2.11.0'
 }
 
 group 'ch.repnik'
-version '1.4.1'
+version '1.4.2'
 
 repositories {
     mavenCentral()
+    intellijPlatform {
+        defaultRepositories()
+    }
 }
 
+// See https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin.html
 dependencies {
+    intellijPlatform {
+        intellijIdea '2026.1.4'
+        bundledPlugin 'Git4Idea'
+        pluginVerifier()
+    }
+
     testImplementation 'org.hamcrest:hamcrest:2.2'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.3'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.3'
@@ -22,8 +32,8 @@ dependencies {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }
 
 test {
@@ -33,20 +43,17 @@ test {
     }
 }
 
-// See https://github.com/JetBrains/gradle-intellij-plugin/
-intellij {
-    version.set('2023.2.4')
-    plugins = ['Git4Idea']
+intellijPlatform {
+    pluginConfiguration {
+        ideaVersion {
+            sinceBuild = '261'
+            untilBuild = provider { null }
+        }
+    }
+
+    pluginVerification {
+        ides {
+            recommended()
+        }
+    }
 }
-
-runPluginVerifier{
-    ideVersions = ["IC-2023.2.4"]
-}
-
-patchPluginXml {
-    sinceBuild.set("232")
-    untilBuild.set("")
-}
-
-
-
