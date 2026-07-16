@@ -113,12 +113,18 @@ public class CommitPrefixCheckinHandler extends CheckinHandler implements GitRep
     return super.getBeforeCheckinConfigurationPanel();
   }
 
-  private Optional<String> getNewCommitMessage() {
+  private String getNewCommitMessage() {
     String branchName = extractBranchName();
     // log.warn("BranchName: " + branchName);
 
-    return calculateNewCommitMessage(getTicketSystem(), branchName, panel.getCommitMessage(),
-        getWrapLeft(), getWrapRight(), getIssueKeyPosition());
+    Optional<String> ticketName = getTicket(getTicketSystem(), branchName);
+
+    if (ticketName.isPresent()) {
+      // Sets the value for the new Panel UI
+      return updatePrefix(ticketName.get(), panel.getCommitMessage(), getTicketSystem(), getWrapLeft(), getWrapRight(), getIssueKeyPosition());
+    }
+
+    return panel.getCommitMessage();
   }
 
   static Optional<String> calculateNewCommitMessage(TicketSystem ticketSystem, String branchName,
