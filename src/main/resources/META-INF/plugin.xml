@@ -1,13 +1,13 @@
 <idea-plugin>
     <id>commit-prefix-plugin</id>
     <name>Git Auto Prefix</name>
-    <version>1.4.1</version>
+    <version>1.4.2</version>
     <vendor url="https://github.com/thomasrepnik/idea-commit-prefix-plugin">Thomas Repnik</vendor>
 
     <change-notes><![CDATA[
         <p>
           <ul>
-            <li>Added support for lowercase project keys</li>
+            <li>Fixed: switching the git branch no longer activates the Commit tool window or steals focus — the commit message prefix is now updated silently in the background</li>
           </ul>
         </p>
 
