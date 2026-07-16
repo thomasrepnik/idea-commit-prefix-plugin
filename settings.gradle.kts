@@ -1,0 +1,1 @@
+rootProject.name = "commit-prefix-plugin"
