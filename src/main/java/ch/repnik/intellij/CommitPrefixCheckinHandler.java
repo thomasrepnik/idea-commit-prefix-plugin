@@ -83,6 +83,22 @@ public class CommitPrefixCheckinHandler extends CheckinHandler implements GitRep
             });
   }
 
+  /**
+   * Sets the commit message without requesting focus.
+   * panel.setCommitMessage() would call CommitMessageUi.focus() (see CommitProjectPanelAdapter)
+   * which steals the focus e.g. from the terminal when switching branches.
+   */
+  private void setCommitMessageWithoutFocus(String newMessage) {
+    CommitMessage commitMessageComponent =
+        UIUtil.findComponentOfType(panel.getComponent(), CommitMessage.class);
+    if (commitMessageComponent != null) {
+      commitMessageComponent.setCommitMessage(newMessage);
+    } else {
+      // Fallback for unknown CheckinProjectPanel implementations (may move focus)
+      panel.setCommitMessage(newMessage);
+    }
+  }
+
   @Nullable
   private CommitMessage findCommitMessageComponent() {
     JComponent component = panel.getComponent();
@@ -97,18 +113,30 @@ public class CommitPrefixCheckinHandler extends CheckinHandler implements GitRep
     return super.getBeforeCheckinConfigurationPanel();
   }
 
-  private String getNewCommitMessage() {
+  private Optional<String> getNewCommitMessage() {
     String branchName = extractBranchName();
     // log.warn("BranchName: " + branchName);
 
-    Optional<String> ticketName = getTicket(getTicketSystem(), branchName);
+    return calculateNewCommitMessage(getTicketSystem(), branchName, panel.getCommitMessage(),
+        getWrapLeft(), getWrapRight(), getIssueKeyPosition());
+  }
 
-    if (ticketName.isPresent()) {
-      // Sets the value for the new Panel UI
-      return updatePrefix(ticketName.get(), panel.getCommitMessage(), getTicketSystem(), getWrapLeft(), getWrapRight(), getIssueKeyPosition());
+  static Optional<String> calculateNewCommitMessage(TicketSystem ticketSystem, String branchName,
+      String currentMessage, String wrapLeft, String wrapRight, Position issueKeyPosition) {
+    Optional<String> ticketName = getTicket(ticketSystem, branchName);
+
+    if (!ticketName.isPresent()) {
+      return Optional.empty();
     }
 
-    return panel.getCommitMessage();
+    String newMessage = updatePrefix(ticketName.get(), currentMessage, ticketSystem, wrapLeft, wrapRight, issueKeyPosition);
+
+    // CommitMessage.getText() trims trailing whitespace, so compare rTrimmed to detect real changes
+    if (rTrim(newMessage).equals(currentMessage == null ? "" : rTrim(currentMessage))) {
+      return Optional.empty();
+    }
+
+    return Optional.of(newMessage);
   }
 
   static Optional<String> getTicket(TicketSystem ticketSystem, String branchName) {
