@@ -13,16 +13,20 @@ import com.intellij.openapi.vcs.CheckinProjectPanel;
 import com.intellij.openapi.vcs.ProjectLevelVcsManager;
 import com.intellij.openapi.vcs.checkin.CheckinHandler;
 import com.intellij.openapi.vcs.impl.ProjectLevelVcsManagerImpl;
+import com.intellij.openapi.vcs.ui.CommitMessage;
 import com.intellij.openapi.vcs.ui.RefreshableOnComponent;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.impl.PsiDocumentManagerImpl;
 import com.intellij.util.messages.MessageBusConnection;
+import com.intellij.util.ui.UIUtil;
 import git4idea.GitLocalBranch;
 import git4idea.branch.GitBranchUtil;
 import git4idea.repo.GitRepository;
 import git4idea.repo.GitRepositoryChangeListener;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import javax.swing.JComponent;
 
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -41,7 +45,11 @@ public class CommitPrefixCheckinHandler extends CheckinHandler implements GitRep
   public CommitPrefixCheckinHandler(CheckinProjectPanel panel) {
     this.panel = panel;
 
-    MessageBusConnection connect = panel.getProject().getMessageBus().connect();
+    // Tie the subscription to the commit UI's lifecycle so stale handlers stop firing
+    CommitMessage commitMessage = findCommitMessageComponent();
+    MessageBusConnection connect = commitMessage != null
+        ? panel.getProject().getMessageBus().connect(commitMessage)
+        : panel.getProject().getMessageBus().connect();
     connect.subscribe(GitRepository.GIT_REPO_CHANGE, this);
 
     // Sets the new message on the new commit UI
@@ -53,7 +61,19 @@ public class CommitPrefixCheckinHandler extends CheckinHandler implements GitRep
             PsiDocumentManager psiInstance = PsiDocumentManager.getInstance(this.panel.getProject());
               if (psiInstance instanceof PsiDocumentManagerImpl) {
                 if (!((PsiDocumentManagerImpl) psiInstance).isCommitInProgress()) {
-                  panel.setCommitMessage(getNewCommitMessage());
+                  String newMessage = getNewCommitMessage();
+                  if (newMessage.equals(panel.getCommitMessage())) {
+                    return;
+                  }
+
+                  CommitMessage commitMessage = findCommitMessageComponent();
+                  if (commitMessage != null) {
+                    // Sets the text without requesting focus, unlike panel.setCommitMessage()
+                    // which activates the Commit tool window (e.g. stealing focus from the terminal)
+                    commitMessage.setText(newMessage);
+                  } else {
+                    panel.setCommitMessage(newMessage);
+                  }
                 } else {
                     log.info("PsiDocumentManager reported commit in progress. Skipping Git Auto Prefix");
                 }
@@ -61,6 +81,12 @@ public class CommitPrefixCheckinHandler extends CheckinHandler implements GitRep
                 log.info("PsiDocumentManager is not an instance of PsiDocumentManagerImpl. Skipping Git Auto Prefix");
               }
             });
+  }
+
+  @Nullable
+  private CommitMessage findCommitMessageComponent() {
+    JComponent component = panel.getComponent();
+    return component == null ? null : UIUtil.findComponentOfType(component, CommitMessage.class);
   }
 
   @Nullable
