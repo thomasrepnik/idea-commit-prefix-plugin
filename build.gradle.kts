@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "ch.repnik"
-version = "1.4.2"
+version = "1.5.0"
 
 repositories {
     mavenCentral()
@@ -49,7 +49,7 @@ tasks.test {
 intellijPlatform {
     pluginConfiguration {
         ideaVersion {
-            sinceBuild = "261"
+            sinceBuild = "262"
             untilBuild = provider { null }
         }
     }
