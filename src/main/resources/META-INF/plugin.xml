@@ -1,13 +1,16 @@
 <idea-plugin>
     <id>commit-prefix-plugin</id>
     <name>Git Auto Prefix</name>
-    <version>1.4.2</version>
+    <version>1.5.0</version>
     <vendor url="https://github.com/thomasrepnik/idea-commit-prefix-plugin">Thomas Repnik</vendor>
 
     <change-notes><![CDATA[
         <p>
           <ul>
             <li>Fixed: switching the git branch no longer activates the Commit tool window or steals focus — the commit message prefix is now updated silently in the background</li>
+            <li>Improved: the branch change listener is now tied to the commit UI lifecycle, making prefix updates more reliable</li>
+            <li>Changed: the plugin now requires IntelliJ IDEA 2026.2 or newer</li>
+            <li>Internal: modernized the build (Gradle 9, IntelliJ Platform Gradle Plugin 2.x, Kotlin DSL, Java 21) and cleaned up the commit prefix handling code</li>
           </ul>
         </p>
 

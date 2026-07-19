@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "ch.repnik"
-version = "1.4.2"
+version = "1.5.0"
 
 repositories {
     mavenCentral()
@@ -16,8 +16,12 @@ repositories {
 // See https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin.html
 dependencies {
     intellijPlatform {
-        intellijIdea("2026.1.4")
+        intellijIdea("2026.2")
         bundledPlugin("Git4Idea")
+        bundledModule("intellij.platform.vcs")
+        bundledModule("intellij.platform.vcs.impl")
+        bundledModule("intellij.platform.vcs.dvcs")
+        bundledModule("intellij.platform.vcs.dvcs.impl")
         pluginVerifier()
     }
 
@@ -45,7 +49,7 @@ tasks.test {
 intellijPlatform {
     pluginConfiguration {
         ideaVersion {
-            sinceBuild = "261"
+            sinceBuild = "262"
             untilBuild = provider { null }
         }
     }
